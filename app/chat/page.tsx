@@ -14,8 +14,11 @@ import {
   AlertCircle,
   Copy,
   Check,
+  FileText,
+  ExternalLink,
 } from "lucide-react";
 import { NongJiffyAvatar } from "@/components/ui/NongJiffyAvatar";
+import { autoLinkPageNumbers } from "@/lib/utils";
 
 interface Message {
   id: string;
@@ -219,8 +222,40 @@ export default function ChatPage() {
                   ) : (
                     <div className="prose prose-sm prose-slate max-w-none text-slate-800 leading-relaxed">
                       {m.content ? (
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                          {m.content}
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            a: ({ href, children }) => {
+                              const isPdf = href?.includes(".pdf");
+                              if (isPdf) {
+                                return (
+                                  <a
+                                    href={href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-md text-xs transition-colors shadow-2xs mx-1 align-baseline group/cite cursor-pointer"
+                                    title="คลิกเพื่อเปิดเอกสาร DSD PDF หน้านี้ในแท็บใหม่"
+                                  >
+                                    <FileText className="h-3 w-3 text-amber-700 inline shrink-0" />
+                                    <span>{children}</span>
+                                    <ExternalLink className="h-2.5 w-2.5 text-amber-600 inline shrink-0 group-hover/cite:translate-x-0.5 transition-transform" />
+                                  </a>
+                                );
+                              }
+                              return (
+                                <a
+                                  href={href}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 underline font-medium"
+                                >
+                                  {children}
+                                </a>
+                              );
+                            },
+                          }}
+                        >
+                          {autoLinkPageNumbers(m.content)}
                         </ReactMarkdown>
                       ) : (
                         <span className="inline-block animate-pulse text-slate-400 text-xs">

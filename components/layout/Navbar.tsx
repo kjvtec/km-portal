@@ -17,11 +17,15 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/70 shadow-xs">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Brand Logo - Original Sleek Theme */}
+        {/* Brand Logo - Official VTEC Theme */}
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-white shadow-md shadow-blue-500/20 transition-transform group-hover:scale-105">
-              <Sparkles className="h-5 w-5" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white border border-slate-200 shadow-2xs p-1 transition-transform group-hover:scale-105 overflow-hidden">
+              <img
+                src="/images/vtec-icon.png"
+                alt="VTEC Logo"
+                className="h-full w-full object-contain"
+              />
             </div>
             <div>
               <span className="text-lg font-bold tracking-tight text-slate-900">

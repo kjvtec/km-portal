@@ -10,8 +10,11 @@ import {
   Copy,
   Check,
   User,
+  FileText,
+  ExternalLink,
 } from "lucide-react";
 import { NongJiffyAvatar } from "@/components/ui/NongJiffyAvatar";
+import { autoLinkPageNumbers } from "@/lib/utils";
 import { Message } from "./types";
 
 interface SuggestedQuestion {
@@ -142,8 +145,40 @@ export const ChatHero = memo(function ChatHero({
             >
               {msg.role === "assistant" ? (
                 <div className="prose prose-sm max-w-none prose-slate prose-headings:font-bold prose-headings:text-slate-900 prose-p:my-2 prose-ul:my-2 prose-li:my-0.5 prose-table:my-3 prose-th:bg-slate-100 prose-th:p-2.5 prose-td:p-2.5 prose-td:border prose-th:border">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {msg.content}
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      a: ({ href, children }) => {
+                        const isPdf = href?.includes(".pdf");
+                        if (isPdf) {
+                          return (
+                            <a
+                              href={href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-md text-xs transition-colors shadow-2xs mx-1 align-baseline group/cite cursor-pointer"
+                              title="คลิกเพื่อเปิดเอกสาร DSD PDF หน้านี้ในแท็บใหม่"
+                            >
+                              <FileText className="h-3 w-3 text-amber-700 inline shrink-0" />
+                              <span>{children}</span>
+                              <ExternalLink className="h-2.5 w-2.5 text-amber-600 inline shrink-0 group-hover/cite:translate-x-0.5 transition-transform" />
+                            </a>
+                          );
+                        }
+                        return (
+                          <a
+                            href={href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 underline font-medium"
+                          >
+                            {children}
+                          </a>
+                        );
+                      },
+                    }}
+                  >
+                    {autoLinkPageNumbers(msg.content)}
                   </ReactMarkdown>
                 </div>
               ) : (

@@ -15,6 +15,11 @@ export const metadata: Metadata = {
   title: "VTEC Retail KM - AI Knowledge Management Portal (PTTRM)",
   description:
     "AI-powered Knowledge Management & RAG Assistant for VTEC Retail POS and Jiffy Convenience Store (PTTRM) DSD Specification V1.0",
+  icons: {
+    icon: "/images/vtec-icon.png",
+    shortcut: "/images/vtec-icon.png",
+    apple: "/images/vtec-icon.png",
+  },
 };
 
 export default function RootLayout({
