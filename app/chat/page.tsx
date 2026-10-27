@@ -16,9 +16,11 @@ import {
   Check,
   FileText,
   ExternalLink,
+  Dices,
 } from "lucide-react";
 import { NongJiffyAvatar } from "@/components/ui/NongJiffyAvatar";
 import { autoLinkPageNumbers } from "@/lib/utils";
+import { allSuggestedQuestions } from "@/components/portal/constants";
 
 interface Message {
   id: string;
@@ -42,14 +44,20 @@ export default function ChatPage() {
     }
   }, [messages, isLoading]);
 
-  const suggestedQuestions = [
-    "โครงสร้างองค์กร Organization Structure ใน BA-01 มีลำดับชั้นระดับใดบ้าง?",
-    "เกณฑ์ผ่อนผัน Tolerance Limit ในการรับสินค้าของ BA-06 กำหนดไว้อย่างไรและอยู่หน้าไหน?",
-    "กระบวนการสั่งซื้อและรับสินค้าเข้าคลังสินค้า DC วังน้อย (99001) ใน BA-07 มีขั้นตอนอย่างไร?",
-    "การเชื่อมต่อ Blueplus+ Wallet และสะสมแต้มสมาชิกใน BA-03 / BA-04 ทำงานอย่างไร?",
-    "เงื่อนไขการคืนสินค้าหน้าร้านใน BA-05 กำหนดย้อนหลังได้ไม่เกินกี่วัน?",
-    "การออกใบกำกับภาษีอิเล็กทรอนิกส์ E-Tax ผ่าน IES ใน BA-08 มีรูปแบบอย่างไร?",
-  ];
+  const [activeSuggestions, setActiveSuggestions] = useState(
+    allSuggestedQuestions.slice(0, 6)
+  );
+
+  const shuffleSuggestions = () => {
+    const shuffled = [...allSuggestedQuestions]
+      .sort(() => 0.5 - Math.random())
+      .slice(0, 6);
+    setActiveSuggestions(shuffled);
+  };
+
+  useEffect(() => {
+    shuffleSuggestions();
+  }, []);
 
   const handleCopy = (id: string, text: string) => {
     navigator.clipboard.writeText(text);
@@ -179,20 +187,30 @@ export default function ChatPage() {
 
             {/* Suggested Prompt Chips */}
             <div className="w-full max-w-2xl">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 text-left">
-                คำถามแนะนำ (Suggested Questions):
-              </p>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider text-left">
+                  คำถามแนะนำ (Suggested Questions):
+                </p>
+                <button
+                  onClick={shuffleSuggestions}
+                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg border border-blue-200 transition-colors cursor-pointer"
+                  title="สุ่มคำถามแนะนำชุดใหม่"
+                >
+                  <Dices className="h-3.5 w-3.5" />
+                  <span>สุ่มคำถามใหม่</span>
+                </button>
+              </div>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {suggestedQuestions.map((q, i) => (
+                {activeSuggestions.map((q, i) => (
                   <button
                     key={i}
                     onClick={() => {
-                      setInput(q);
+                      setInput(q.query);
                     }}
-                    className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-3 text-left text-xs font-medium text-slate-700 shadow-sm transition-all hover:border-blue-300 hover:bg-blue-50/50 hover:text-blue-700"
+                    className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-3 text-left text-xs font-medium text-slate-700 shadow-sm transition-all hover:border-blue-300 hover:bg-blue-50/50 hover:text-blue-700 cursor-pointer"
                   >
                     <HelpCircle className="h-4 w-4 shrink-0 text-blue-500" />
-                    <span className="line-clamp-2">{q}</span>
+                    <span className="line-clamp-2">{q.label}</span>
                   </button>
                 ))}
               </div>

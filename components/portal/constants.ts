@@ -1,35 +1,146 @@
 import { BusinessModule } from "./types";
 
-export const suggestedQuestions = [
+export const allSuggestedQuestions = [
+  // BA-01: Organization & Master Data
   {
     label: "โครงสร้างองค์กร 5 ระดับ (BA-01)",
     query: "โครงสร้างองค์กร Organization Structure ใน BA-01 มีลำดับชั้นระดับใดบ้าง?",
   },
   {
+    label: "การกำหนดสิทธิ์ระดับ Shop & Merchant (BA-01)",
+    query: "การกำหนดระดับ Company, Brand และการบริหารจัดการ Shop ใน BA-01 มีเงื่อนไขอย่างไร?",
+  },
+  {
+    label: "Vendor & Product Assignment (BA-01)",
+    query: "การผูก Vendor กับ Product และการกำหนดสถานะสินค้าใน BA-01 ทำงานอย่างไร?",
+  },
+
+  // BA-02: HQ & Report Management
+  {
+    label: "รายงานสรุปยอดขายประจำวัน DSR (BA-02)",
+    query: "รายงานสรุปยอดขายประจำวัน Daily Sales Report (DSR) ใน BA-02 สรุปข้อมูลอะไรบ้าง?",
+  },
+  {
+    label: "การตั้งค่า Price Group ตามโซน (BA-02)",
+    query: "การจัดการข้อมูล Price Group, Price Book และการกำหนดราคาสินค้าตามสาขาใน BA-02 ทำอย่างไร?",
+  },
+  {
+    label: "โครงสร้าง Category Group (BA-02)",
+    query: "การจัด Product Hierarchy 3 ระดับ (Department, Category, Subcategory) ใน BA-02 กำหนดไว้อย่างไร?",
+  },
+
+  // BA-03: CRM & Promotions
+  {
+    label: "การคำนวณโปรโมชั่น Mix & Match (BA-03)",
+    query: "ระบบคำนวณส่วนลดโปรโมชั่น Mix & Match และ Tier Discount ใน BA-03 มีกฎเกณฑ์อย่างไร?",
+  },
+  {
+    label: "การใช้คูปองและสิทธิ์สมาชิก Jiffy (BA-03)",
+    query: "เงื่อนไขการใช้คูปองส่วนลด สิทธิ์สมาชิก และ Voucher หน้าร้าน Jiffy ใน BA-03 กำหนดไว้อย่างไร?",
+  },
+  {
+    label: "การแลกคะแนนสะสม Blue Card (BA-03)",
+    query: "การสะสมและแลกคะแนน Blue Card รวมถึงบัตรเครดิต KBank ใน BA-03 ทำงานอย่างไร?",
+  },
+
+  // BA-04: Payment & Blueplus+
+  {
+    label: "การเชื่อมต่อ API Blueplus+ Wallet (BA-04)",
+    query: "การเชื่อมต่อ Blueplus+ Wallet และ Payment Gateway ใน BA-04 มีสเปกทางเทคนิคอย่างไร?",
+  },
+  {
+    label: "การชำระเงินด้วย QR Payment & EDC (BA-04)",
+    query: "ขั้นตอนการชำระเงินด้วย QR PromptPay, TrueMoney และเครื่องรูดบัตร EDC ใน BA-04 ทำงานอย่างไร?",
+  },
+  {
+    label: "กฎการ Void บิลและการ Refund คืนเงิน (BA-04)",
+    query: "เงื่อนไขและข้อจำกัดในการยกเลิกบิล (Void) และการคืนเงิน (Refund) ใน BA-04 กำหนดไว้อย่างไร?",
+  },
+
+  // BA-05: Store Front Operations
+  {
+    label: "การคืนสินค้าหน้าร้าน 7 วัน (BA-05)",
+    query: "เงื่อนไขการคืนสินค้าหน้าร้าน (Return Policy) ใน BA-05 กำหนดย้อนหลังได้ไม่เกินกี่วันและต้องใช้อะไรบ้าง?",
+  },
+  {
+    label: "ขั้นตอนการเปิดกะ ปิดกะ และ Cash In/Out (BA-05)",
+    query: "ขั้นตอนการเปิดกะ ปิดกะ ตรวจสอบเงินสดในลิ้นชัก และการนำเงินเข้า-ออก (Cash In / Out) ใน BA-05 มีอะไรบ้าง?",
+  },
+  {
+    label: "การตรวจสอบลายนิ้วมือ Cashier & Manager (BA-05)",
+    query: "การสร้างพนักงานใหม่ การเก็บลายนิ้วมือ และการอนุมัติสิทธิ์ Manager Override ใน BA-05 ทำงานอย่างไร?",
+  },
+  {
+    label: "การขายสินค้ายกแพ็ค & UOM (BA-05)",
+    query: "การสแกนบาร์โค้ดสินค้ายกแพ็คและการตัดสต็อกตามหน่วยย่อย UOM หน้าร้านใน BA-05 มีขั้นตอนอย่างไร?",
+  },
+
+  // BA-06: Store Back & Inventory
+  {
     label: "เกณฑ์ Tolerance Limit ±5% (BA-06)",
     query: "เกณฑ์ผ่อนผัน Tolerance Limit ในการรับสินค้าของ BA-06 กำหนดไว้อย่างไรและอยู่หน้าไหน?",
   },
   {
+    label: "รอบการคำนวณ WAC ต้นทุนสินค้า (BA-06)",
+    query: "WAC (Weighted Average Cost) ในระบบ POS Vtec Retail คำนวณตอนไหนบ้าง สรุปเป็นข้อๆ?",
+  },
+  {
+    label: "รูปแบบเลขที่ใบสั่งซื้อ PO ≤ 15 หลัก (BA-06)",
+    query: "ข้อกำหนดรูปแบบและโครงสร้างเลขที่ใบสั่งซื้อ PO (PO Number Format) ใน BA-06 กำหนดไว้อย่างไร?",
+  },
+  {
+    label: "ระบบแนะนำการสั่งซื้ออัตโนมัติ (Suggest Order) (BA-06)",
+    query: "ระบบสั่งซื้อสินค้าตามปริมาณแนะนำอัตโนมัติ (Suggest Order Mode) ใน BR-06-01-04 คำนวณจากปัจจัยใดบ้าง?",
+  },
+  {
+    label: "การตรวจนับสต็อก Cycle Count (BA-06)",
+    query: "ขั้นตอนการตรวจนับสต็อกสินค้า (Cycle Count และ Physical Count) ใน BA-06 มีกระบวนการอย่างไร?",
+  },
+  {
+    label: "การตัดจ่ายสินค้าชำรุด Waste (BA-06)",
+    query: "การบันทึกตัดจ่ายสินค้าชำรุดเสียหายและหมดอายุ (Waste Management) ใน BA-06 ทำอย่างไร?",
+  },
+  {
+    label: "การโอนสินค้าระหว่างสาขา STO (BA-06)",
+    query: "ขั้นตอนการทำเอกสารโอนสินค้าระหว่างสาขา (Store to Store Transfer - STO) ใน BA-06 ทำงานอย่างไร?",
+  },
+
+  // BA-07: Branch Ordering & DC
+  {
     label: "การรับสินค้าเข้า DC วังน้อย (BA-07)",
-    query: "กระบวนการสั่งซื้อและรับสินค้าเข้าคลังสินค้า DC วังน้อย (99001) ใน BA-07 มีขั้นตอนอย่างไร?",
+    query: "กระบวนการสั่งซื้อและรับสินค้าเข้าคลังสินค้า DC วังน้อย (รหัส 99001) ใน BA-07 มีขั้นตอนอย่างไร?",
   },
   {
-    label: "การชำระเงิน & Blueplus+ (BA-04)",
-    query: "การเชื่อมต่อ Blueplus+ Wallet และการสะสมแต้มสมาชิกใน BA-03 / BA-04 ทำงานอย่างไร?",
+    label: "ข้อกำหนด Cut-off Time สั่งสินค้า (BA-07)",
+    query: "รอบเวลาสั่งสินค้า Cut-off Time และ Lead Time การกระจายสินค้าของ DC วังน้อยใน BA-07 กำหนดไว้อย่างไร?",
   },
   {
-    label: "การคืนสินค้าหน้าร้าน 7 วัน (BA-05)",
-    query: "เงื่อนไขการคืนสินค้าหน้าร้านใน BA-05 กำหนดย้อนหลังได้ไม่เกินกี่วัน?",
+    label: "การส่งตรงจากผู้ผลิต Direct Delivery (BA-07)",
+    query: "กระบวนการจัดส่งสินค้าตรงจากผู้ผลิต (Direct Supplier Delivery) ใน BA-07 ต่างจากการส่งผ่าน DC อย่างไร?",
   },
-  {
-    label: "รอบการคำนวณ WAC (ต้นทุนสินค้า)",
-    query: "WAC ในระบบ POS Vtec Retail คำนวณตอนไหนบ้าง สรุปเป็นข้อๆ",
-  },
+
+  // BA-08: E-Tax via IES
   {
     label: "การออก E-Tax ผ่าน IES (BA-08)",
-    query: "การออกใบกำกับภาษีอิเล็กทรอนิกส์ E-Tax ผ่าน IES ใน BA-08 มีรูปแบบอย่างไร?",
+    query: "การออกใบกำกับภาษีอิเล็กทรอนิกส์ E-Tax ผ่าน IES ใน BA-08 มีรูปแบบและข้อกำหนดอย่างไร?",
+  },
+  {
+    label: "การขอใบกำกับภาษีเต็มรูปย้อนหลัง (BA-08)",
+    query: "การขอใบกำกับภาษีเต็มรูปผ่านระบบออนไลน์หรือที่สาขาใน BA-08 มีขั้นตอนและเงื่อนไขเวลาอย่างไร?",
+  },
+
+  // BA-09: Data Dictionary & Schemas
+  {
+    label: "โครงสร้างตาราง shop_categorygroup (BA-09)",
+    query: "Data Dictionary โครงสร้างตาราง shop_categorygroup ใน BA-09 มีฟิลด์อะไรบ้างและอยู่หน้าไหน?",
+  },
+  {
+    label: "Data Views & Mapping Schemas (BA-09)",
+    query: "ภาพรวมโครงสร้างตารางฐานข้อมูลและ Data Views หลักในหมวด BA-09 สรุปเป็นหัวข้อสำคัญมีอะไรบ้าง?",
   },
 ];
+
+export const suggestedQuestions = allSuggestedQuestions.slice(0, 7);
 
 export const businessModules: BusinessModule[] = [
   {

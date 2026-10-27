@@ -7,7 +7,7 @@ import { Sparkles, BookOpen, ArrowRight, Upload } from "lucide-react";
 import { ChatHero } from "@/components/portal/ChatHero";
 import { BusinessModulesGrid } from "@/components/portal/BusinessModulesGrid";
 import { QuickActionsBar } from "@/components/portal/QuickActionsBar";
-import { businessModules, suggestedQuestions } from "@/components/portal/constants";
+import { businessModules, allSuggestedQuestions } from "@/components/portal/constants";
 import { Message, BRItem, PreviewPdfState } from "@/components/portal/types";
 import baBrDataRaw from "@/data/ba-br-structure.json";
 
@@ -253,7 +253,7 @@ export default function HomePage() {
           messages={messages}
           isLoading={isLoading}
           error={error}
-          suggestedQuestions={suggestedQuestions}
+          suggestedQuestions={allSuggestedQuestions}
           onSendMessage={handleSendMessage}
           onResetChat={handleResetChat}
         />

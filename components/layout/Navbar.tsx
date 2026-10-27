@@ -19,17 +19,18 @@ export function Navbar() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand Logo - Official VTEC Theme */}
         <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white border border-slate-200 shadow-2xs p-1 transition-transform group-hover:scale-105 overflow-hidden">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl overflow-hidden shadow-xs border border-slate-200 transition-transform group-hover:scale-105">
               <img
-                src="/images/vtec-icon.png"
-                alt="VTEC Logo"
-                className="h-full w-full object-contain"
+                src="/images/vtec-navicon.png"
+                alt="VTEC Navicon"
+                className="h-full w-full object-cover"
               />
             </div>
             <div>
-              <span className="text-lg font-bold tracking-tight text-slate-900">
-                VTEC Retail <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">KM</span>
+              <span className="text-lg font-bold tracking-tight text-slate-900 flex items-center gap-1.5">
+                <span>VTEC Retail</span>
+                <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent font-extrabold">KM</span>
               </span>
               <span className="block text-[10px] font-semibold tracking-wider text-slate-500 uppercase">
                 AI Knowledge Management

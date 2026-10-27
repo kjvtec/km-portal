@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect, memo } from "react";
+import React, { useState, useRef, useEffect, useCallback, memo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
@@ -12,6 +12,7 @@ import {
   User,
   FileText,
   ExternalLink,
+  Dices,
 } from "lucide-react";
 import { NongJiffyAvatar } from "@/components/ui/NongJiffyAvatar";
 import { autoLinkPageNumbers } from "@/lib/utils";
@@ -41,7 +42,22 @@ export const ChatHero = memo(function ChatHero({
 }: ChatHeroProps) {
   const [input, setInput] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [activeSuggestions, setActiveSuggestions] = useState<SuggestedQuestion[]>([]);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  // Shuffle and pick 6 questions randomly from the pool
+  const shuffleSuggestions = useCallback(() => {
+    if (!suggestedQuestions || suggestedQuestions.length === 0) return;
+    const shuffled = [...suggestedQuestions]
+      .sort(() => 0.5 - Math.random())
+      .slice(0, 6);
+    setActiveSuggestions(shuffled);
+  }, [suggestedQuestions]);
+
+  // Initial random shuffle on client mount
+  useEffect(() => {
+    shuffleSuggestions();
+  }, [shuffleSuggestions]);
 
   // Auto-scroll ONLY inside the chat container; keeps the outer browser window completely fixed/pinned
   useEffect(() => {
@@ -57,12 +73,25 @@ export const ChatHero = memo(function ChatHero({
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const handleSelectSuggestion = (query: string) => {
+    onSendMessage(query);
+    // Shuffle suggestions as conversation progresses to discover new topics
+    shuffleSuggestions();
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const query = input.trim();
     if (!query || isLoading) return;
     setInput("");
     onSendMessage(query);
+    // Shuffle suggestions when user sends a question
+    shuffleSuggestions();
+  };
+
+  const handleReset = () => {
+    onResetChat();
+    shuffleSuggestions();
   };
 
   return (
@@ -93,7 +122,7 @@ export const ChatHero = memo(function ChatHero({
         </div>
 
         <button
-          onClick={onResetChat}
+          onClick={handleReset}
           className="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 px-3.5 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-700 hover:text-white transition-colors cursor-pointer"
           title="เริ่มบทสนทนาใหม่"
         >
@@ -102,17 +131,28 @@ export const ChatHero = memo(function ChatHero({
         </button>
       </div>
 
-      {/* Quick Suggested Prompt Chips */}
-      <div className="bg-slate-50 border-b border-slate-200 px-5 sm:px-8 py-3 overflow-x-auto flex items-center gap-2 text-xs scrollbar-thin">
-        <span className="text-[11px] font-bold text-slate-500 uppercase shrink-0">คำถามแนะนำ:</span>
-        {suggestedQuestions.map((q, idx) => (
+      {/* Quick Suggested Prompt Chips with Random Shuffle */}
+      <div className="bg-slate-50 border-b border-slate-200 px-5 sm:px-8 py-2.5 overflow-x-auto flex items-center gap-2 text-xs scrollbar-thin">
+        <div className="flex items-center gap-1.5 shrink-0 pr-1 border-r border-slate-200">
+          <span className="text-[11px] font-bold text-slate-500 uppercase">คำถามแนะนำ:</span>
+          <button
+            onClick={shuffleSuggestions}
+            className="inline-flex items-center gap-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200/80 px-2 py-0.5 text-[11px] font-semibold transition-colors cursor-pointer shadow-2xs"
+            title="คลิกเพื่อสุ่มคำถามแนะนำชุดใหม่จากคลัง DSD"
+          >
+            <Dices className="h-3.5 w-3.5 text-blue-600" />
+            <span>สุ่มใหม่</span>
+          </button>
+        </div>
+
+        {activeSuggestions.map((q, idx) => (
           <button
             key={idx}
-            onClick={() => onSendMessage(q.query)}
+            onClick={() => handleSelectSuggestion(q.query)}
             disabled={isLoading}
-            className="shrink-0 rounded-full border border-slate-300 bg-white hover:border-blue-500 hover:bg-blue-50 px-3.5 py-1.5 text-slate-700 transition-colors hover:text-blue-700 text-xs font-medium shadow-2xs cursor-pointer disabled:opacity-50"
+            className="shrink-0 rounded-full border border-slate-300 bg-white hover:border-blue-500 hover:bg-blue-50 px-3 py-1.5 text-slate-700 transition-colors hover:text-blue-700 text-xs font-medium shadow-2xs cursor-pointer disabled:opacity-50 flex items-center gap-1"
           >
-            {q.label}
+            <span>{q.label}</span>
           </button>
         ))}
       </div>

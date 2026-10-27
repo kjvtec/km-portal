@@ -16,9 +16,12 @@ export const metadata: Metadata = {
   description:
     "AI-powered Knowledge Management & RAG Assistant for VTEC Retail POS and Jiffy Convenience Store (PTTRM) DSD Specification V1.0",
   icons: {
-    icon: "/images/vtec-icon.png",
-    shortcut: "/images/vtec-icon.png",
-    apple: "/images/vtec-icon.png",
+    icon: [
+      { url: "/images/vtec-navicon.png", sizes: "512x512", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    shortcut: "/images/vtec-navicon.png",
+    apple: "/images/vtec-navicon.png",
   },
 };
 
