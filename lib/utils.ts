@@ -19,13 +19,33 @@ export function formatDate(dateString: string | Date): string {
 }
 
 /**
+ * Sanitizes stray multilingual artifacts (such as Arabic 'مثل' -> 'เช่น', or stray Arabic/foreign tokens)
+ * that multilingual LLMs occasionally slip into Thai responses.
+ */
+export function sanitizeThaiResponse(text: string): string {
+  if (!text) return text;
+  return text
+    // Replace Arabic "مثل" (mithl = such as) with Thai "เช่น"
+    .replace(/(?:\b|[\s(])مثل(?:\b|[\s)])/g, (match) => {
+      if (match.startsWith("(") && match.endsWith(")")) return "(เช่น)";
+      if (match.startsWith("(")) return "(เช่น ";
+      if (match.endsWith(")")) return "เช่น)";
+      return " เช่น ";
+    })
+    .replace(/مثل/g, "เช่น")
+    // Clean up any stray Arabic script characters accidentally leaked into Thai text
+    .replace(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/g, "");
+}
+
+/**
  * Transforms Business Requirement (BR) codes (e.g. BR-01-01-04, BR-06-01-02)
  * into direct clickable PDF links pointing to the exact page in Signed DSD V1.0.
  * Automatically absorbs any redundant "หน้า XX" following the BR code to keep
  * sentences clean, readable, and free from cluttered badges or icons.
  */
-export function autoLinkBrAndCitations(text: string): string {
-  if (!text) return text;
+export function autoLinkBrAndCitations(rawText: string): string {
+  if (!rawText) return rawText;
+  const text = sanitizeThaiResponse(rawText);
 
   // 1. Protect existing markdown links to avoid double-wrapping
   const links: string[] = [];
