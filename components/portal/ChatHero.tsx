@@ -10,12 +10,10 @@ import {
   Copy,
   Check,
   User,
-  FileText,
-  ExternalLink,
   Dices,
 } from "lucide-react";
 import { NongJiffyAvatar } from "@/components/ui/NongJiffyAvatar";
-import { autoLinkPageNumbers } from "@/lib/utils";
+import { autoLinkBrAndCitations } from "@/lib/utils";
 import { Message } from "./types";
 
 interface SuggestedQuestion {
@@ -190,27 +188,21 @@ export const ChatHero = memo(function ChatHero({
                     components={{
                       a: ({ href, children }) => {
                         const isPdf = href?.includes(".pdf");
+                        let pageTooltip = "คลิกเพื่อเปิดลิงก์";
                         if (isPdf) {
-                          return (
-                            <a
-                              href={href}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-md text-xs transition-colors shadow-2xs mx-1 align-baseline group/cite cursor-pointer"
-                              title="คลิกเพื่อเปิดเอกสาร DSD PDF หน้านี้ในแท็บใหม่"
-                            >
-                              <FileText className="h-3 w-3 text-amber-700 inline shrink-0" />
-                              <span>{children}</span>
-                              <ExternalLink className="h-2.5 w-2.5 text-amber-600 inline shrink-0 group-hover/cite:translate-x-0.5 transition-transform" />
-                            </a>
-                          );
+                          const pageMatch = href?.match(/#page=(\d+)/);
+                          pageTooltip = pageMatch
+                            ? `คลิกเพื่อเปิดเอกสาร DSD ฉบับทางการ หน้า ${pageMatch[1]}`
+                            : "คลิกเพื่อเปิดเอกสาร DSD ฉบับทางการ";
                         }
+
                         return (
                           <a
                             href={href}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-800 underline font-medium"
+                            className="font-semibold text-blue-600 hover:text-blue-800 underline decoration-blue-300 hover:decoration-blue-600 transition-colors"
+                            title={pageTooltip}
                           >
                             {children}
                           </a>
@@ -218,7 +210,7 @@ export const ChatHero = memo(function ChatHero({
                       },
                     }}
                   >
-                    {autoLinkPageNumbers(msg.content)}
+                    {autoLinkBrAndCitations(msg.content)}
                   </ReactMarkdown>
                 </div>
               ) : (
