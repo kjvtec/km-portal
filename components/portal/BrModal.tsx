@@ -108,10 +108,10 @@ export function BrModal({
         </div>
 
         {/* Hint Bar */}
-        <div className="bg-amber-50/70 border-b border-amber-200/60 px-5 py-2 text-[11px] text-amber-900 flex items-center justify-between">
+        <div className="bg-blue-50/60 border-b border-blue-100 px-5 py-2 text-[11px] text-blue-900 flex items-center justify-between">
           <span className="flex items-center gap-1.5 font-medium">
-            <FileText className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-            <span>คลิกที่รายการข้อกำหนด หรือคลิกปุ่ม &quot;เปิด PDF&quot; เพื่อเปิดดูหน้าข้อกำหนดนั้นในเอกสารจริงได้ทันที</span>
+            <FileText className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+            <span>คลิกที่ข้อกำหนดเพื่อเปิดดูเอกสาร DSD ฉบับจริง หรือคลิก &quot;ถาม AI&quot; เพื่อสอบถามรายละเอียด</span>
           </span>
         </div>
 
@@ -124,7 +124,6 @@ export function BrModal({
           ) : (
             filteredBRs.map((br, idx) => {
               const pageNum = br.page || 1;
-              const pdfUrl = `/docs/DSD-PTTRM-JIFFY-RETAIL-V1.0_Signed.pdf#page=${pageNum}`;
               return (
                 <div
                   key={idx}
@@ -140,13 +139,11 @@ export function BrModal({
                       {br.code}
                     </span>
                     <div className="flex-1">
-                      <p className="text-sm font-semibold text-slate-900 group-hover:text-blue-700 leading-snug transition-colors flex items-center gap-1.5">
-                        <span>{br.title}</span>
+                      <p className="text-sm font-semibold text-slate-900 group-hover:text-blue-700 leading-snug transition-colors">
+                        {br.title}
                       </p>
-                      <p className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1.5">
-                        <span className="text-blue-600 group-hover:underline">คลิกเปิดดู PDF ข้อนี้</span>
-                        <span>•</span>
-                        <span className="text-slate-500 font-medium">หน้า {pageNum} / 1004</span>
+                      <p className="text-xs text-slate-400 mt-0.5 font-medium">
+                        หน้า {pageNum} / 1,004
                       </p>
                     </div>
                   </div>
@@ -155,29 +152,19 @@ export function BrModal({
                   <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
                     <button
                       onClick={() => onPreviewPdf({ page: pageNum, code: br.code, title: br.title })}
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100 hover:border-amber-400 transition-all cursor-pointer shadow-2xs group/btn"
-                      title={`เปิดดู PDF หน้า ${pageNum}`}
+                      className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg text-slate-700 bg-slate-100 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 border border-slate-200 transition-all cursor-pointer"
+                      title={`เปิดเอกสาร DSD หน้า ${pageNum}`}
                     >
-                      <FileText className="h-3.5 w-3.5 text-amber-700" />
-                      <span>เปิด PDF หน้า {pageNum}</span>
+                      <FileText className="h-3.5 w-3.5 text-slate-500" />
+                      <span>หน้า {pageNum}</span>
                     </button>
-
-                    <a
-                      href={pdfUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
-                      title={`เปิด PDF หน้า ${pageNum} ในแท็บใหม่`}
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                    </a>
 
                     <button
                       onClick={() => onAskAi(br)}
-                      className="text-xs text-blue-600 hover:text-blue-800 font-medium px-2.5 py-1.5 rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-1 cursor-pointer shrink-0"
-                      title="ถาม AI เพิ่มเติมเกี่ยวกับข้อกำหนดนี้"
+                      className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg text-blue-700 bg-blue-50 hover:bg-blue-100 hover:border-blue-300 border border-blue-200 transition-all cursor-pointer"
+                      title="ถามน้อง Jiffy เพิ่มเติมเกี่ยวกับข้อกำหนดนี้"
                     >
-                      <Sparkles className="h-3 w-3" />
+                      <Sparkles className="h-3.5 w-3.5 text-blue-600" />
                       <span>ถาม AI</span>
                     </button>
                   </div>

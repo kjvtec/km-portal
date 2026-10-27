@@ -182,7 +182,7 @@ export const ChatHero = memo(function ChatHero({
               }`}
             >
               {msg.role === "assistant" ? (
-                <div className="prose prose-sm max-w-none prose-slate prose-headings:font-bold prose-headings:text-slate-900 prose-p:my-2 prose-ul:my-2 prose-li:my-0.5 prose-table:my-3 prose-th:bg-slate-100 prose-th:p-2.5 prose-td:p-2.5 prose-td:border prose-th:border">
+                <div className="prose prose-sm max-w-none text-slate-800 leading-relaxed prose-headings:font-bold prose-headings:text-slate-900 prose-headings:mt-3 prose-headings:mb-1.5 prose-p:my-2 prose-ul:my-2 prose-ul:space-y-1 prose-li:my-0.5 prose-strong:text-slate-900 prose-strong:font-bold prose-table:my-3 prose-th:bg-slate-100 prose-th:p-2.5 prose-td:p-2.5 prose-td:border prose-th:border">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
