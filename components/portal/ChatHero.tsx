@@ -182,10 +182,55 @@ export const ChatHero = memo(function ChatHero({
               }`}
             >
               {msg.role === "assistant" ? (
-                <div className="prose prose-sm max-w-none text-slate-800 leading-relaxed prose-headings:font-bold prose-headings:text-slate-900 prose-headings:mt-3 prose-headings:mb-1.5 prose-p:my-2 prose-ul:my-2 prose-ul:space-y-1 prose-li:my-0.5 prose-strong:text-slate-900 prose-strong:font-bold prose-table:my-3 prose-th:bg-slate-100 prose-th:p-2.5 prose-td:p-2.5 prose-td:border prose-th:border">
+                <div className="prose prose-sm max-w-none text-slate-800 leading-relaxed">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
+                      blockquote: ({ children }) => (
+                        <div className="not-prose my-3 border-l-4 border-blue-500 bg-gradient-to-r from-blue-50/90 via-indigo-50/40 to-white rounded-r-2xl p-3.5 text-slate-800 text-sm shadow-2xs">
+                          {children}
+                        </div>
+                      ),
+                      h3: ({ children }) => (
+                        <h3 className="not-prose flex items-center gap-2 text-slate-900 font-bold text-sm sm:text-base mt-4 mb-2 pb-1.5 border-b border-slate-200">
+                          <span className="h-2 w-2 rounded-full bg-blue-600 inline-block shrink-0"></span>
+                          <span>{children}</span>
+                        </h3>
+                      ),
+                      ul: ({ children }) => (
+                        <ul className="not-prose my-2 space-y-2 list-none pl-0">
+                          {children}
+                        </ul>
+                      ),
+                      li: ({ children }) => (
+                        <li className="flex items-start gap-2.5 text-slate-800 text-sm leading-relaxed">
+                          <span className="h-1.5 w-1.5 rounded-full bg-blue-500 mt-2 shrink-0"></span>
+                          <div className="flex-1">{children}</div>
+                        </li>
+                      ),
+                      table: ({ children }) => (
+                        <div className="not-prose my-3.5 overflow-x-auto rounded-xl border border-slate-200 shadow-2xs bg-white">
+                          <table className="w-full text-xs text-left text-slate-700 divide-y divide-slate-200">
+                            {children}
+                          </table>
+                        </div>
+                      ),
+                      thead: ({ children }) => (
+                        <thead className="bg-slate-100/90 text-slate-800 font-bold text-xs uppercase tracking-wider">
+                          {children}
+                        </thead>
+                      ),
+                      th: ({ children }) => (
+                        <th className="px-3.5 py-2.5 font-bold text-slate-900">
+                          {children}
+                        </th>
+                      ),
+                      td: ({ children }) => (
+                        <td className="px-3.5 py-2.5 border-t border-slate-100 text-slate-700">
+                          {children}
+                        </td>
+                      ),
+                      hr: () => <hr className="my-3.5 border-slate-200" />,
                       a: ({ href, children }) => {
                         const isPdf = href?.includes(".pdf");
                         let pageTooltip = "คลิกเพื่อเปิดลิงก์";
@@ -194,6 +239,23 @@ export const ChatHero = memo(function ChatHero({
                           pageTooltip = pageMatch
                             ? `คลิกเพื่อเปิดเอกสาร DSD ฉบับทางการ หน้า ${pageMatch[1]}`
                             : "คลิกเพื่อเปิดเอกสาร DSD ฉบับทางการ";
+                        }
+
+                        const isBrCode =
+                          typeof children === "string" && /^BR-\d{2}-\d{2}/.test(children);
+
+                        if (isBrCode) {
+                          return (
+                            <a
+                              href={href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center font-mono font-bold text-[11px] px-2 py-0.5 rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100 hover:text-blue-900 border border-blue-200/90 transition-colors mx-0.5 cursor-pointer shadow-2xs"
+                              title={pageTooltip}
+                            >
+                              {children}
+                            </a>
+                          );
                         }
 
                         return (
