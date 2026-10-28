@@ -11,10 +11,12 @@ import {
   Check,
   User,
   Dices,
+  Cloud,
 } from "lucide-react";
 import { NongJiffyAvatar } from "@/components/ui/NongJiffyAvatar";
 import { autoLinkBrAndCitations } from "@/lib/utils";
 import { BrDetailModal } from "./BrDetailModal";
+import { AwsDetailModal } from "./AwsDetailModal";
 import { Message } from "./types";
 
 interface SuggestedQuestion {
@@ -42,6 +44,7 @@ export const ChatHero = memo(function ChatHero({
   const [input, setInput] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [selectedBrCode, setSelectedBrCode] = useState<string | null>(null);
+  const [selectedAwsCode, setSelectedAwsCode] = useState<string | null>(null);
   const [activeSuggestions, setActiveSuggestions] = useState<SuggestedQuestion[]>([]);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
@@ -258,6 +261,42 @@ export const ChatHero = memo(function ChatHero({
                           );
                         }
 
+                        const awsMatch =
+                          href?.includes("/documents/aws") ||
+                          (typeof children === "string" &&
+                            children.match(/AWS-(?:\d{2}(?:\.\d)?|[A-Za-z]+)/i));
+
+                        if (awsMatch) {
+                          let targetCode = "AWS-01";
+                          if (href?.includes("sec=")) {
+                            const matchSec = href.match(/sec=([^&#]+)/);
+                            if (matchSec) targetCode = decodeURIComponent(matchSec[1]);
+                          } else if (href?.includes("page=")) {
+                            const matchPage = href.match(/page=([1-6])/);
+                            if (matchPage) targetCode = `page-${matchPage[1]}`;
+                          } else if (typeof children === "string") {
+                            const codeMatch = children.match(/AWS-(?:\d{2}(?:\.\d)?|[A-Za-z]+)/i);
+                            if (codeMatch) targetCode = codeMatch[0];
+                          }
+
+                          return (
+                            <a
+                              href={href || `/documents/aws?sec=${targetCode}`}
+                              onClick={(e) => {
+                                if (!e.ctrlKey && !e.metaKey && e.button === 0) {
+                                  e.preventDefault();
+                                  setSelectedAwsCode(targetCode);
+                                }
+                              }}
+                              className="inline-flex items-center font-semibold text-[11px] px-2 py-0.5 rounded-md text-amber-900 bg-amber-50 hover:bg-amber-100 hover:text-amber-950 border border-amber-300/80 transition-colors mx-0.5 cursor-pointer shadow-2xs"
+                              title={`คลิกเพื่อเปิดอ่านรายละเอียดและ PDF สถาปัตยกรรม AWS (${targetCode})`}
+                            >
+                              <Cloud className="h-3 w-3 inline mr-1 text-amber-600 shrink-0" />
+                              <span>{children}</span>
+                            </a>
+                          );
+                        }
+
                         const isPdf = href?.includes(".pdf");
                         let pageTooltip = "คลิกเพื่อเปิดลิงก์";
                         if (isPdf) {
@@ -361,6 +400,17 @@ export const ChatHero = memo(function ChatHero({
           onClose={() => setSelectedBrCode(null)}
           onAskAi={(prompt) => {
             setSelectedBrCode(null);
+            onSendMessage(prompt);
+          }}
+        />
+      )}
+
+      {selectedAwsCode && (
+        <AwsDetailModal
+          awsCode={selectedAwsCode}
+          onClose={() => setSelectedAwsCode(null)}
+          onAskAi={(prompt) => {
+            setSelectedAwsCode(null);
             onSendMessage(prompt);
           }}
         />

@@ -1,0 +1,98 @@
+{
+  "AWS-01": {
+    "code": "AWS-01",
+    "title": "บทนำและข้อมูลบัญชี AWS (Multi-Account Architecture)",
+    "section": "1. บทนำและข้อมูลบัญชี AWS (Scope & Account Information)",
+    "page": 1,
+    "summary": "โครงสร้าง Multi-Account (Workload 312728688861 + Network 607063196689) ใน Region ap-southeast-7 (Bangkok)",
+    "content": "## 1. บทนำและข้อมูลบัญชี AWS (Scope & Account Information)\n\nระบบงานนี้เป็นสภาพแวดล้อม Development (DEV) สำหรับระบบ PTTRM VTEC JIFFY POS ติดตั้งใน AWS Region ap-southeast-7 (Asia Pacific — Bangkok) โดยยกเว้นเฉพาะ AWS WAF ที่ผูกกับ CloudFront ซึ่งต้องอยู่ใน Region us-east-1 (Global Scope) ตามข้อกำหนดของ AWS\n\nการออกแบบโครงสร้างบัญชีใช้แนวคิด Multi-Account Architecture ตามหลัก AWS Well-Architected Framework:\n\n| บัญชี AWS (Account Name) | Account ID | AWS Profile | หน้าที่รับผิดชอบ |\n| :--- | :--- | :--- | :--- |\n| **Workload Non-Prod Account** | 312728688861 | pttrm-nonprod | รันแอปพลิเคชันหลักบน EKS Cluster, ฐานข้อมูล Aurora PostgreSQL, Cache Redis และ S3 Assets |\n| **Network Account** | 607063196689 | pttrm-network | ดูแลเครือข่ายด่านหน้า (Ingress Edge), CloudFront, WAF, Public ALB และ OpenVPN Gateway สำหรับเชื่อมต่อระยะไกล |"
+  },
+  "AWS-02": {
+    "code": "AWS-02",
+    "title": "แผนผังสถาปัตยกรรมและการไหลของทราฟฟิก (Traffic Flow Architecture)",
+    "section": "2. แผนผังสถาปัตยกรรมและการไหลของทราฟฟิก",
+    "page": 1,
+    "summary": "การไหลของทราฟฟิกจาก Internet -> CloudFront -> WAF -> Public ALB -> Lambda Sync -> Internal Ingress ALB -> EKS Pods",
+    "content": "## 2. แผนผังสถาปัตยกรรมและการไหลของทราฟฟิก (Traffic Flow Architecture)\n\nระบบใช้การส่งต่อข้อมูลแบบหลายระดับ (Multi-Tier) และข้ามบัญชี (Cross-Account Boundary) จากภายนอกเข้าสู่ Container ภายใน:\n\n### ลำดับการส่งคำขอ (Request Flow)\n1. **ผู้ใช้งานภายนอก (Internet)** เข้าใช้งานผ่าน URL: https://ras-dev.pttrm.com\n2. คำขอส่งมายัง **Amazon CloudFront (vtecapp-cdn-dev)** พร้อมตรวจสอบความปลอดภัยผ่าน **AWS WAF (vtecapp-cdn-dev-waf)** ใน Region us-east-1\n3. CloudFront ส่งต่อคำขอผ่าน HTTPS ไปยัง **Public ALB (vtecapp-ext-alb-dev)** ที่ฝั่ง Network Account (607063196689)\n4. **ALB-to-ALB Sync Lambda (vtecapp-ext-alb-dev-a2a)**: รันทุก 1 นาที เพื่อค้นหา IP ของ Ingress ALB แล้วลงทะเบียน (Register) เข้ากับ Target Group ของ Public ALB อัตโนมัติ (ปัจจุบัน Sync สำเร็จ 3 IPs: 172.28.10.145, 172.28.10.20, 172.28.10.91)\n5. ทราฟฟิกวิ่งข้ามโครงข่ายผ่าน AWS Transit Gateway (TGW) ไปยัง **Internal Ingress ALB (vtecapp-alb-dev)** ภายใน Workload Account (312728688861)\n6. Ingress ALB ส่งต่อคำขอเข้าสู่ **EKS Pods** ตามการกำหนด Routing ของทีมพัฒนา"
+  },
+  "AWS-02.2": {
+    "code": "AWS-02.2",
+    "title": "การตั้งค่า DNS และ CNAME (DNS Records Configuration)",
+    "section": "2.2 การตั้งค่า DNS (DNS Records Configuration)",
+    "page": 2,
+    "summary": "การตั้งค่า CNAME ras-dev.pttrm.com ชี้ไปยัง d2jtcqzr2d6dnv.cloudfront.net (Lowercase)",
+    "content": "### 2.2 การตั้งค่า DNS (DNS Records Configuration)\n\n* **สิ่งที่ลูกค้าต้องดำเนินการ (Customer Action Needed)**:\n  * มีเพียงรายการเดียวเท่านั้น คือเพิ่มเรคคอร์ด CNAME ในระบบ DNS ของลูกค้า:\n    * **Host / Record**: ras-dev.pttrm.com\n    * **Record Type**: CNAME\n    * **Value**: d2jtcqzr2d6dnv.cloudfront.net\n    * **ข้อสังเกต**: ต้องใช้ตัวอักษรพิมพ์เล็กทั้งหมด (Lowercase) ตามข้อบังคับของ CloudFront\n* **เรคคอร์ดของ Ingress ALB และ Public ALB**: สร้างขึ้นโดย AWS อัตโนมัติ ลูกค้าไม่ต้องชี้ DNS ใดๆ เข้าหา ALB โดยตรง"
+  },
+  "AWS-03": {
+    "code": "AWS-03",
+    "title": "สถาปัตยกรรมโครงข่าย VPC และการกระจาย Subnet (3 AZs)",
+    "section": "3. สถาปัตยกรรมโครงข่าย (Networking Architecture)",
+    "page": 2,
+    "summary": "VPC rm-nonprod-vpc (172.28.10.0/23), Pod CIDR (100.64.32.0/19), App/Secure/Non-expose Subnets",
+    "content": "## 3. สถาปัตยกรรมโครงข่าย (Networking Architecture)\n\nระบบเครือข่ายเป็นแบบ Shared VPC ผ่าน AWS Resource Access Manager (RAM):\n\n* **VPC หลัก (Workload)**: vpc-0f45a0034beb15958 (rm-nonprod-vpc)\n  * **VPC Primary CIDR**: 172.28.10.0/23\n  * **Pod Secondary CIDR**: 100.64.32.0/19 (ใช้ร่วมกับ AWS VPC CNI Custom Networking เพื่อแยกวง IP สำหรับ Pods ไม่ให้แย่งชิง IP วงหลักขององค์กร)\n* **การกระจาย Subnet (ครอบคลุม 3 Availability Zones: a, b, c)**:\n  * **App Subnets (สำหรับ EKS Worker Nodes)**:\n    * Zone A: subnet-02b7b285520931989\n    * Zone B: subnet-026f8e36089bbd09e\n    * Zone C: subnet-0057282cda9c09879\n  * **Secure Subnets (สำหรับ Database Aurora & Redis Cache)**:\n    * Zone A: subnet-059377336d693204c\n    * Zone B: subnet-0ca627725499aa71b\n    * Zone C: subnet-0a1b982b1f513ca22\n  * **Non-expose Subnets (สำหรับ EKS Pod IPs โดยเฉพาะ)**:\n    * Zone A: subnet-024984c096fc3c168\n    * Zone B: subnet-023499c582c988934\n    * Zone C: subnet-0d1831db4ec285fb7"
+  },
+  "AWS-04.1": {
+    "code": "AWS-04.1",
+    "title": "Amazon EKS Cluster (vtechq-eks-dev - Kubernetes v1.35)",
+    "section": "4.1 ระบบประมวลผลคอนเทนเนอร์ (Amazon EKS)",
+    "page": 3,
+    "summary": "EKS Cluster vtechq-eks-dev, k8s v1.35, Node m6i.large, Private-Only Endpoint, Add-ons 7 ตัว",
+    "content": "### 4.1 ระบบประมวลผลคอนเทนเนอร์ (Amazon EKS)\n* **ชื่อคลัสเตอร์**: vtechq-eks-dev\n* **เวอร์ชัน Kubernetes**: 1.35 (Node AMI v1.35.9 อัปเกรดต่อเนื่องจาก 1.31 -> 1.32 -> 1.33 -> 1.34 -> 1.35)\n* **Endpoint Access**: Private Only (Public = false, Private = true) ยกระดับความปลอดภัยขั้นสูงสุด เข้าถึงเพื่อรัน kubectl ได้ผ่าน VPN เท่านั้น\n* **Node Group (general)**:\n  * สถานะ: ACTIVE\n  * สเปก Instance: m6i.large (2 vCPU, 8 GiB RAM)\n  * ระบบปฏิบัติการ: Amazon Linux 2023 (AL2023_x86_64_STANDARD)\n  * Auto Scaling: Min = 1, Max = 1, Desired = 1\n  * รองรับ IMDSv2 และ Storage เป็น EBS gp3\n* **EKS Managed Add-ons (รองรับ v1.35 ทั้งหมด)**:\n  1. vpc-cni v1.22.4-eksbuild.8 (Custom Networking + Prefix Delegation)\n  2. kube-proxy v1.35.3-eksbuild.59\n  3. coredns v1.13.2-eksbuild.59\n  4. aws-ebs-csi-driver v1.67.2-eksbuild.1 (*Service Account ผูกกับ IRSA Role ARN vtechq-eks-dev-ebs-csi-role*)\n  5. metrics-server v0.7.2-eksbuild.18\n  6. amazon-cloudwatch-observability v6.7.0-eksbuild.1\n  7. AWS Load Balancer Controller (ติดตั้งผ่าน Helm)\n* **EKS Access Entries (การจัดการสิทธิ์)**:\n  * RMAdminRole และ RMDevOpsRole ได้รับนโยบาย AmazonEKSClusterAdminPolicy\n  * RMReadOnlyRole ได้รับนโยบาย AmazonEKSViewPolicy\n* **Ingress ALB (vtecapp-alb-dev)**: โหลดบาลานเซอร์ภายใน (Internal Scheme) บริหารจัดการโดย AWS Load Balancer Controller"
+  },
+  "AWS-04.2": {
+    "code": "AWS-04.2",
+    "title": "ระบบฐานข้อมูลและพื้นที่จัดเก็บ (Aurora PostgreSQL 17.5 & Redis 7.1)",
+    "section": "4.2 ระบบจัดเก็บข้อมูลและฐานข้อมูล (Data & Storage)",
+    "page": 3,
+    "summary": "Aurora PG 17.5 (db.t4g.medium Port 5432), ElastiCache Redis 7.1 (cache.t4g.small Port 6379), ECR, S3",
+    "content": "### 4.2 ระบบจัดเก็บข้อมูลและฐานข้อมูล (Data & Storage)\n* **Amazon Aurora PostgreSQL (vtecapp-aurora-dev)**:\n  * **Engine**: Aurora PostgreSQL เวอร์ชัน 17.5\n  * **ขนาด**: db.t4g.medium (1 Writer, 0 Reader - Single AZ สำหรับ DEV)\n  * **การเชื่อมต่อ**: Port 5432 / Database: vtechq / Master User: vtecpos\n  * **ความปลอดภัยและการสำรองข้อมูล**: Retention 7 วัน, เข้ารหัสข้อมูล At-Rest\n  * **Security Group**: sg-01c76e32b7f1b0cdf อนุญาตทราฟฟิกพอร์ต 5432 จาก EKS Node SG และ OpenVPN Gateway IP (172.28.0.138/32)\n* **Amazon ElastiCache for Redis (vtecapp-redis-dev)**:\n  * **Engine**: Redis เวอร์ชัน 7.1 (Cluster Mode: Disabled)\n  * **ขนาด**: cache.t4g.small (1 โหนด)\n  * **การเชื่อมต่อ**: Port 6379\n  * **ความปลอดภัย**: เปิดใช้งาน In-Transit Encryption (TLS), At-Rest Encryption และเปิดใช้งาน AUTH Token\n  * **Security Group**: sg-0d09ebce810b2fe49 อนุญาตพอร์ต 6379 จาก EKS Node SG และ OpenVPN Gateway IP\n* **Amazon ECR (vtecapp)**:\n  * Image Tag Immutability: เปิดใช้งาน (ห้ามเขียนทับ Tag)\n  * Scan on push: เปิดใช้งาน (สแกนหา CVEs อัตโนมัติเมื่อพุชอิมเมจ)\n  * การเข้ารหัส: AES256 / Lifecycle Policy: เก็บ Image ล่าสุด 20 รายการ\n* **Amazon S3 (vtecapp-assets-dev)**:\n  * การเข้ารหัส: SSE-KMS (aws/s3) / ปิดการเข้าถึงสาธารณะ 100% (Block all public access)"
+  },
+  "AWS-04.3": {
+    "code": "AWS-04.3",
+    "title": "ระบบเครือข่ายด่านหน้าและความปลอดภัย (Public ALB, CloudFront & AWS WAF)",
+    "section": "4.3 ระบบเครือข่ายด่านหน้าและความปลอดภัย (Edge & Security Layer)",
+    "page": 4,
+    "summary": "Public ALB (Port 80->443 ACM ap-southeast-7), CloudFront (d2jtcqzr2d6dnv.cloudfront.net), AWS WAF (us-east-1)",
+    "content": "### 4.3 ระบบเครือข่ายด่านหน้าและความปลอดภัย (Edge & Security Layer)\n* **Public ALB (vtecapp-ext-alb-dev)**:\n  * วางอยู่ใน Network VPC (Untrust Subnets)\n  * Port 80 ทำ Redirect ไป Port 443\n  * Port 443 ตรวจสอบ Host Header ras-dev.pttrm.com ส่งต่อเข้า Target Group (IPs ของ Ingress ALB)\n  * ใบรับรอง SSL/TLS: ดึงจาก AWS Certificate Manager (ACM) ใน Region ap-southeast-7\n* **Amazon CloudFront Distribution (vtecapp-cdn-dev)**:\n  * Domain: d2jtcqzr2d6dnv.cloudfront.net\n  * Alternate Domain (CNAME): ras-dev.pttrm.com\n  * Custom SSL Certificate: ACM ใน Region us-east-1 (ตามข้อกำหนดของ CloudFront)\n  * การแคช: Managed-CachingOptimized / Managed-AllViewer\n* **AWS WAF (vtecapp-cdn-dev-waf)**:\n  * ติดตั้งในขอบเขต Global (us-east-1)\n  * กฎป้องกัน: IP Whitelist, IP Blacklist, Anonymous IP List, Amazon IP Reputation List, Core Rule Set (CRS) และ SQL Injection Rules"
+  },
+  "AWS-05": {
+    "code": "AWS-05",
+    "title": "การเข้าถึงระยะไกลผ่าน OpenVPN Access Server และคำสั่งเชื่อมต่อ",
+    "section": "5. การเข้าถึงระยะไกลผ่าน OpenVPN (OpenVPN Access Server)",
+    "page": 4,
+    "summary": "OpenVPN Access Server (vtec-openvpn-nonprod IP 43.209.188.148 / SNAT 172.28.0.138), วิธีการเชื่อมต่อและ CLI",
+    "content": "## 5. การเข้าถึงระยะไกลผ่าน OpenVPN (OpenVPN Access Server)\n\nOpenVPN ติดตั้งใน Network Account เพื่อให้นักพัฒนาและผู้ดูแลระบบสามารถเข้าถึงคลัสเตอร์ EKS ที่เป็น Private Endpoint และเชื่อมต่อกับ Database ได้โดยตรง:\n\n* **Instance Name**: vtec-openvpn-nonprod (i-08c83864c0bcda437)\n* **Public IP (Elastic IP)**: 43.209.188.148\n* **Private IP**: 172.28.0.138\n* **หลักการทำงานของ Source NAT (SNAT)**:\n  * OpenVPN Access Server จะทำการ NAT ทราฟฟิกของผู้ใช้งานทั้งหมดให้เสมือนออกมาจาก Private IP 172.28.0.138\n  * ทำให้การตั้งค่า Security Group ภายใน ไม่จำเป็นต้องระบุวง IP ย่อยของ VPN ไคลเอนต์ แต่สามารถ Whitelist เฉพาะ IP 172.28.0.138/32 ได้ทันที\n\n### 5.1 คู่มือขั้นตอนการเชื่อมต่อสำหรับผู้ใช้งาน (How to Connect)\n1. เปิดเว็บบราวเซอร์ไปยัง OpenVPN Admin/Client Portal: https://43.209.188.148/ (กดยอมรับคำเตือน Certificate)\n2. เข้าสู่ระบบด้วย Username: openvpn (รหัสผ่านจัดส่งผ่านช่องทางความปลอดภัยแยกต่างหาก)\n3. ดาวน์โหลด Client Profile (.ovpn) หรือติดตั้งโปรแกรม OpenVPN Connect แล้ว Import Profile เข้าสู่โปรแกรม\n4. ทำการกดเชื่อมต่อ (Connect) เพื่อสร้าง VPN Tunnel เข้าสู่เครือข่ายภายใน\n5. สำหรับผู้ดูแลระบบที่ต้องการสั่งงาน EKS ผ่าน CLI ให้รันคำสั่ง:\n   ```bash\n   aws eks update-kubeconfig --name vtechq-eks-dev --region ap-southeast-7 --profile pttrm-nonprod\n   ```\n   *หมายเหตุ: สิทธิ์การเข้าถึง Kubernetes จะถูกตรวจสอบผ่าน IAM Role ตามนโยบาย EKS Access Entry (RMAdminRole / RMDevOpsRole / RMReadOnlyRole)*"
+  },
+  "AWS-06": {
+    "code": "AWS-06",
+    "title": "การจัดการรหัสผ่านและความลับ (AWS Secrets Manager)",
+    "section": "6. การจัดการรหัสผ่านและความลับ (Secrets Management)",
+    "page": 5,
+    "summary": "AWS Secrets Manager: Aurora Master Password (vtecpos, auto-rotation), Redis Auth Token",
+    "content": "## 6. การจัดการรหัสผ่านและความลับ (Secrets Management)\n\nความลับทั้งหมดถูกจัดเก็บไว้ใน AWS Secrets Manager ภายใน Workload Account:\n\n| ชื่อ Secret | ค่าที่จัดเก็บ | ผู้ดูแลและสร้าง (Managed By) | การหมุนเวียน (Rotation) | นโยบายความปลอดภัย |\n| :--- | :--- | :--- | :--- | :--- |\n| **Aurora Master Password** | รหัสผ่านผู้ใช้ vtecpos สำหรับ Aurora DB | จัดการโดย AWS RDS Service (manage_master_user_password) | หมุนเวียนอัตโนมัติ (Auto / AWS-managed) | ค่ารหัสผ่านไม่ปรากฏใน Terraform State ใดๆ แอปพลิเคชันอ่านผ่าน ARN โดยตรง |\n| **Redis Auth Token** | Auth Token สำหรับเข้าใช้งาน Redis Cluster | จัดการโดย Terraform (random_password) | กำหนดด้วยตนเอง (Manual/Self-managed) | รหัสผ่านถูกบันทึกลงใน Terraform State ที่ถูกเข้ารหัสบน S3 Backend |"
+  },
+  "AWS-07": {
+    "code": "AWS-07",
+    "title": "ข้อควรระวังและแนวทางการดูแลรักษาระบบ (Operational Notes)",
+    "section": "7. ข้อควรระวังและแนวทางการดูแลรักษาระบบ (Architectural & Operational Notes)",
+    "page": 5,
+    "summary": "EKS API CLI vs Terraform onprem_cidr_blocks = [\"172.28.0.138/32\"], Add-ons ignore_changes, Bastion disabled",
+    "content": "## 7. ข้อควรระวังและแนวทางการดูแลรักษาระบบ (Architectural & Operational Notes)\n\n1. **ความแตกต่างระหว่างการตั้งค่า Security Group ผ่าน Terraform และ AWS CLI**:\n   * **พอร์ต EKS API 443**: กฎที่เปิดให้ VPN Gateway (172.28.0.138/32) เข้าถึง เป็นการเพิ่มผ่าน AWS CLI เข้าที่ Managed Security Group ของ EKS โดยตรง (sg-007b64e9956a2855d) ซึ่งไม่อยู่ใน State ของ Terraform ห้ามพยายามนำเข้าหรือแก้ไขผ่านโค้ดทั่วไป\n   * **พอร์ต Aurora (5432) และ Redis (6379)**: จัดการผ่าน Terraform ด้วยตัวแปร onprem_cidr_blocks = [\"172.28.0.138/32\"] **ห้ามเพิ่มกฎผ่าน AWS CLI ด้วยตนเอง** เพราะหากมีการรัน terraform apply กฎที่ทำผ่าน CLI จะถูกเขียนทับทันที\n2. **การอัปเกรด EKS Add-ons**:\n   * โมดูล Terraform มีการระบุ ignore_changes = all เอาไว้ เพื่อให้ทีม Cloud Engineer สามารถอัปเกรดเวอร์ชันของ Add-ons ผ่าน CLI/Console ได้อย่างยืดหยุ่น โดยไม่ส่งผลกระทบให้เกิด Configuration Drift ใน Terraform\n3. **Bastion Host**:\n   * มีโค้ดเตรียมไว้แต่ถูกปิดการใช้งานอยู่ (enable_bastion = false) เนื่องจากใช้ OpenVPN เป็นช่องทางหลักในการเข้าถึง"
+  },
+  "AWS-08": {
+    "code": "AWS-08",
+    "title": "บันทึกผลการทดสอบและตรวจรับระบบ (Verification Checklist TC-01 ถึง TC-11)",
+    "section": "8. บันทึกผลการทดสอบและตรวจรับระบบ (Verification Checklist)",
+    "page": 6,
+    "summary": "ผลการทดสอบทรัพยากรทุกรายการบน DEV ผ่านการทดสอบทั้งหมด (PASS 100%)",
+    "content": "## 8. บันทึกผลการทดสอบและตรวจรับระบบ (Verification Checklist)\n\nผลการทดสอบการติดตั้งทรัพยากรทุกรายการบนสภาพแวดล้อม DEV อยู่ในสถานะ ผ่านการทดสอบทั้งหมด (PASS 100%):\n\n| รหัสทดสอบ | รายการทดสอบ (Test Case) | เป้าหมายทรัพยากร (Target) | ผลการทดสอบ (Status) |\n| :---: | :--- | :--- | :---: |\n| **TC-01** | EKS Cluster ออนไลน์ และ Node Group อยู่ในสถานะ ACTIVE | vtechq-eks-dev | **PASS** |\n| **TC-02** | Ingress ALB พร้อมใช้งาน (Active) | vtecapp-alb-dev | **PASS** |\n| **TC-03** | ECR Repository ออนไลน์ พร้อมรับ Image | vtecapp | **PASS** |\n| **TC-04** | Aurora PostgreSQL Cluster ออนไลน์ | vtecapp-aurora-dev | **PASS** |\n| **TC-05** | ElastiCache Redis Cluster ออนไลน์ | vtecapp-redis-dev | **PASS** |\n| **TC-06** | S3 Assets Bucket เข้าถึงได้ถูกต้อง | vtecapp-assets-dev | **PASS** |\n| **TC-07** | Public ALB ออนไลน์และพร้อมรับคำขอ | vtecapp-ext-alb-dev | **PASS** |\n| **TC-08** | Lambda Sync ALB-to-ALB ทำงานตามรอบเวลา (Sync 3 IPs สมบูรณ์) | vtecapp-ext-alb-dev-a2a | **PASS** |\n| **TC-09** | CloudFront Distribution อยู่ในสถานะ Deployed และ Enabled | vtecapp-cdn-dev | **PASS** |\n| **TC-10** | AWS WAF ติดตั้งและป้องกัน CloudFront ตามกฎครบถ้วน | vtecapp-cdn-dev-waf | **PASS** |\n| **TC-11** | OpenVPN เชื่อมต่อได้ พร้อมเปิด Security Group ไปยัง EKS API, Aurora และ Redis | vtec-openvpn-nonprod | **PASS** |"
+  },
+  "AWS-09": {
+    "code": "AWS-09",
+    "title": "ประวัติการปรับปรุงเอกสารสถาปัตยกรรม AWS DEV (Changelog Summary)",
+    "section": "9. ประวัติการปรับปรุงเอกสาร (Changelog Summary)",
+    "page": 6,
+    "summary": "ประวัติการปรับปรุงเอกสาร v1.0 ถึง v1.5 โดย DailiTech",
+    "content": "## 9. ประวัติการปรับปรุงเอกสาร (Changelog Summary)\n\n* **v1.0 (22 ต.ค. 2026)**: เริ่มต้นสรุปทรัพยากรสำหรับสภาพแวดล้อม DEV ตรวจสอบทรัพยากร EKS, ALB, ECR, Aurora, Redis, S3, CloudFront, WAF\n* **v1.1 (22 ต.ค. 2026)**: เพิ่มหมวด Supporting Resources: IAM Roles (EKS + 7 IRSA roles), IAM Policies, Security Groups และ Target Group ข้าม Account\n* **v1.2 (22 ต.ค. 2026)**: เพิ่มตาราง AWS Secrets Manager สำหรับ Aurora Password และ Redis Token\n* **v1.3 (22 ต.ค. 2026)**: เพิ่มไดอะแกรมสถาปัตยกรรม (Architecture Diagram), ลำดับทราฟฟิก (Traffic Flow) และรายละเอียดการตั้งค่า DNS\n* **v1.4 (26 ต.ค. 2026)**: ปรับปรุง EKS เป็นเวอร์ชัน 1.35 (Node 1.35.9), ปรับเวอร์ชัน Add-ons ทั้งหมด, ปรับ API Endpoint เป็น Private-only, เพิ่มรายละเอียด EBS CSI IRSA annotation\n* **v1.5 (26 ต.ค. 2026)**: เพิ่มหมวด OpenVPN Access Server พร้อมขั้นตอน How to Connect, อัปเดต Security Group การเข้าถึงข้ามระบบ และยืนยันผลการทดสอบ TC-11 (PASS)"
+  }
+}

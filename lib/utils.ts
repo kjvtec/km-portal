@@ -49,30 +49,46 @@ export function autoLinkBrAndCitations(rawText: string): string {
 
   // 1. Protect existing markdown links to avoid double-wrapping
   const links: string[] = [];
-  let processed = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match) => {
-    links.push(match);
+  const protectLink = (label: string, url: string) => {
+    links.push(`[${label}](${url})`);
     return `__MD_LINK_${links.length - 1}__`;
+  };
+
+  let processed = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, label, url) => {
+    return protectLink(label, url);
   });
 
   // 2. Transform BR codes and absorb any redundant trailing "หน้า XX" or "(หน้า XX)"
-  // Matches: BR code, optional (หน้า X) or หน้า X, and optional trailing spaces before a closing parenthesis
   const brRegex = /(BR-\d{2}-\d{2}(?:-\d{2})?)(?:\s*(?:\(\s*หน้า\s*(\d{1,4})(?:\s*[\/\-]\s*\d{1,4})?\s*\)|หน้า\s*(\d{1,4})(?:\s*[\/\-]\s*\d{1,4})?))?(?:\s*(?=\)))?/g;
-
   processed = processed.replace(brRegex, (match, brCode) => {
-    return `[${brCode}](/documents/br/${brCode})`;
+    return protectLink(brCode, `/documents/br/${brCode}`);
   });
 
-  // 3. For any remaining standalone page ranges like "หน้า 33-37" or "หน้า 558" (exclude "หน้า X/1004")
+  // 3. Transform AWS bracketed references: e.g. [AWS-04.1 Amazon EKS] (หน้า 3) or [AWS-05 OpenVPN]
+  const awsBracketRegex = /\[(AWS-\d{2}(?:\.\d)?(?:\s+[^\]\n]+)?)\](?:\s*(?:\(\s*หน้า\s*([1-6])\s*\)|หน้า\s*([1-6])))?/gi;
+  processed = processed.replace(awsBracketRegex, (match, title) => {
+    const codeMatch = title.match(/AWS-\d{2}(?:\.\d)?/i);
+    const code = codeMatch ? codeMatch[0].toUpperCase() : title;
+    return protectLink(title, `/documents/aws?sec=${code}`);
+  });
+
+  // 4. Transform AWS bare codes: e.g. AWS-04.1, AWS-05 (หน้า 4), AWS-EKS, AWS-OPENVPN
+  const awsBareRegex = /\b(AWS-(?:\d{2}(?:\.\d)?|EKS|OPENVPN|VPN|AURORA|REDIS|NETWORK|VPC|WAF|CLOUDFRONT|ALB|SECRETS))\b(?:\s*(?:\(\s*หน้า\s*([1-6])\s*\)|หน้า\s*([1-6])))?/gi;
+  processed = processed.replace(awsBareRegex, (match, awsCode) => {
+    return protectLink(awsCode, `/documents/aws?sec=${awsCode.toUpperCase()}`);
+  });
+
+  // 5. Standalone DSD pages (e.g. หน้า 33-37 or หน้า 558)
   const pageRegex = /หน้า\s*(\d{1,4})(?:\s*(?:[\-]|ถึง)\s*\d{1,4})?(?!\s*\/\s*1004)/g;
   processed = processed.replace(pageRegex, (match, pageNum) => {
     const page = parseInt(pageNum, 10);
     if (page >= 1 && page <= 1004) {
-      return `[${match}](/docs/DSD-PTTRM-JIFFY-RETAIL-V1.0_Signed.pdf#page=${page})`;
+      return protectLink(match, `/docs/DSD-PTTRM-JIFFY-RETAIL-V1.0_Signed.pdf#page=${page}`);
     }
     return match;
   });
 
-  // 4. Restore protected links
+  // 6. Restore all protected links
   return processed.replace(/__MD_LINK_(\d+)__/g, (_, idx) => links[Number(idx)]);
 }
 

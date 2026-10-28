@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -19,6 +19,7 @@ import {
   Lock,
   Network,
 } from "lucide-react";
+import { getAwsDetail } from "@/lib/aws-details";
 
 interface AwsDocumentViewerProps {
   content: string;
@@ -28,8 +29,36 @@ export function AwsDocumentViewer({ content }: AwsDocumentViewerProps) {
   const [activeTab, setActiveTab] = useState<"doc" | "pdf">("doc");
   const [copied, setCopied] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [targetPage, setTargetPage] = useState<number>(1);
+  const [targetSec, setTargetSec] = useState<string | null>(null);
 
-  const pdfUrl = "/docs/PTTRM_VTEC_JIFFY_POS_Resource_Summary_DEV_TH.pdf";
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const secParam = params.get("sec");
+      const pageParam = params.get("page");
+      const tabParam = params.get("tab");
+
+      if (tabParam === "pdf") {
+        setActiveTab("pdf");
+      }
+
+      if (secParam) {
+        setTargetSec(secParam);
+        const detail = getAwsDetail(secParam);
+        if (detail) {
+          setTargetPage(detail.page);
+        }
+      } else if (pageParam) {
+        const p = parseInt(pageParam, 10);
+        if (p >= 1 && p <= 6) {
+          setTargetPage(p);
+        }
+      }
+    }
+  }, []);
+
+  const pdfUrl = `/docs/PTTRM_VTEC_JIFFY_POS_Resource_Summary_DEV_TH.pdf#page=${targetPage}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(content);
@@ -192,7 +221,7 @@ export function AwsDocumentViewer({ content }: AwsDocumentViewerProps) {
             }`}
           >
             <FileText className="h-3.5 w-3.5" />
-            <span>เอกสาร PDF ฉบับจริง (DailiTech 6 หน้า)</span>
+            <span>เอกสาร PDF ฉบับจริง (หน้า {targetPage} จาก 6 หน้า)</span>
           </button>
         </div>
 
