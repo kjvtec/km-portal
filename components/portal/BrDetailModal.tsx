@@ -12,6 +12,8 @@ import {
   Share2,
 } from "lucide-react";
 import { getBrDetail, BrDetail } from "@/lib/br-details";
+import { cleanThaiOcrText } from "@/lib/utils";
+import { BrContentRenderer } from "./BrContentRenderer";
 
 interface BrDetailModalProps {
   brCode: string;
@@ -63,10 +65,12 @@ export function BrDetailModal({ brCode, onClose, onAskAi }: BrDetailModalProps) 
   }
 
   const baName = baNames[detail.baCode] || detail.baCode;
+  const cleanTitle = cleanThaiOcrText(detail.title);
   const pdfUrl = `/docs/DSD-PTTRM-JIFFY-RETAIL-V1.0_Signed.pdf#page=${detail.page}`;
 
   const handleCopyContent = () => {
-    const textToCopy = `[${detail.code}] ${detail.title}\nหมวด: ${baName} (หน้า ${detail.page} DSD V1.0)\n\n${detail.content}`;
+    const cleaned = cleanThaiOcrText(detail.content);
+    const textToCopy = `[${detail.code}] ${cleanTitle}\nหมวด: ${baName} (หน้า ${detail.page} DSD V1.0)\n\n${cleaned}`;
     navigator.clipboard.writeText(textToCopy);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -81,7 +85,7 @@ export function BrDetailModal({ brCode, onClose, onAskAi }: BrDetailModalProps) 
 
   const handleAsk = () => {
     if (onAskAi) {
-      onAskAi(`ขอทราบรายละเอียดและการทำงานของข้อกำหนด ${detail.code} (${detail.title}) ในหมวด ${detail.baCode}`);
+      onAskAi(`ขอทราบรายละเอียดและการทำงานของข้อกำหนด ${detail.code} (${cleanTitle}) ในหมวด ${detail.baCode}`);
       onClose();
     }
   };
@@ -108,7 +112,7 @@ export function BrDetailModal({ brCode, onClose, onAskAi }: BrDetailModalProps) 
                 </span>
               </div>
               <h3 className="text-base sm:text-lg font-bold text-white truncate">
-                {detail.title}
+                {cleanTitle}
               </h3>
             </div>
           </div>
@@ -210,25 +214,20 @@ export function BrDetailModal({ brCode, onClose, onAskAi }: BrDetailModalProps) 
         </div>
 
         {/* Modal Body */}
-        <div className="flex-1 overflow-y-auto p-6 bg-slate-50">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-6 bg-slate-50">
           {activeTab === "detail" ? (
-            <div className="space-y-4 max-w-3xl mx-auto">
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-                <div className="border-b border-slate-100 pb-3 mb-4 flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    DSD PTTRM JIFFY RETAIL V1.0 • ข้อกำหนดทางธุรกิจ & การออกแบบระบบ
-                  </span>
-                  <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
-                    เอกสารลงนามทางการ หน้า {detail.page}
-                  </span>
-                </div>
+            <div className="space-y-4 max-w-4xl mx-auto">
+              <BrContentRenderer
+                code={detail.code}
+                title={cleanTitle}
+                content={detail.content}
+                page={detail.page}
+                baCode={detail.baCode}
+                baName={baName}
+                onAskAi={onAskAi ? handleAsk : undefined}
+              />
 
-                <div className="font-sans text-sm text-slate-800 leading-relaxed whitespace-pre-wrap selection:bg-blue-100">
-                  {detail.content}
-                </div>
-              </div>
-
-              <div className="rounded-xl border border-blue-200 bg-blue-50/70 p-4 text-xs text-blue-900 flex items-start gap-3">
+              <div className="rounded-2xl border border-blue-200/90 bg-blue-50/70 p-4 text-xs text-blue-900 flex items-start gap-3 shadow-2xs">
                 <Sparkles className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
                 <div>
                   <p className="font-bold mb-0.5">ต้องการวิเคราะห์หรือถามประเด็นเพิ่มเติมเกี่ยวกับข้อนี้?</p>

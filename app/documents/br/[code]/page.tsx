@@ -12,6 +12,7 @@ import {
   ChevronRight,
   ShieldCheck,
 } from "lucide-react";
+import { BrContentRenderer } from "@/components/portal/BrContentRenderer";
 
 export const dynamic = "force-static";
 
@@ -100,22 +101,14 @@ export default async function BrDetailPage({ params }: PageProps) {
       </div>
 
       {/* Main Requirement Details Card */}
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm space-y-6">
-        <div className="border-b border-slate-100 pb-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <BookOpen className="h-5 w-5 text-blue-600" />
-            <h2 className="text-base font-bold text-slate-900">
-              รายละเอียดข้อกำหนดและ System Design จากเอกสาร DSD ฉบับจริง
-            </h2>
-          </div>
-          <span className="text-xs text-slate-400">
-            อ้างอิงหน้า {detail.page}
-          </span>
-        </div>
-
-        <div className="prose prose-sm max-w-none text-slate-800 leading-relaxed font-sans whitespace-pre-wrap selection:bg-blue-100">
-          {detail.content}
-        </div>
+      <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-8 shadow-sm space-y-6">
+        <BrContentRenderer
+          code={detail.code}
+          title={detail.title}
+          content={detail.content}
+          page={detail.page}
+          baCode={detail.baCode}
+        />
       </div>
 
       {/* In-Page PDF Preview Card */}
