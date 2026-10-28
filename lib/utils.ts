@@ -18,6 +18,95 @@ export function formatDate(dateString: string | Date): string {
   }).format(date);
 }
 
+// Pre-compiled regular expressions for peak performance
+const ARABIC_MATCH_RE = /(?:\b|[\s(])مثل(?:\b|[\s)])/g;
+const ARABIC_BARE_RE = /مثل/g;
+const ARABIC_CHARS_RE = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/g;
+const CJK_CHARS_RE = /[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF\u3000-\u303F\uFF00-\uFFEF]/g;
+const MULTI_SPACE_RE = /([^\n\S]){2,}/g;
+
+const MD_LINK_RE = /\[([^\]]+)\]\(([^)]+)\)/g;
+const BR_LINK_RE = /(BR-\d{2}-\d{2}(?:-\d{2})?)(?:\s*(?:\(\s*หน้า\s*(\d{1,4})(?:\s*[\/\-]\s*\d{1,4})?\s*\)|หน้า\s*(\d{1,4})(?:\s*[\/\-]\s*\d{1,4})?))?(?:\s*(?=\)))?/g;
+const AWS_BRACKET_RE = /\[(AWS-\d{2}(?:\.\d)?(?:\s+[^\]\n]+)?)\](?:\s*(?:\(\s*หน้า\s*([1-6])\s*\)|หน้า\s*([1-6])))?/gi;
+const AWS_BARE_RE = /\b(AWS-(?:\d{2}(?:\.\d)?|EKS|OPENVPN|VPN|AURORA|REDIS|NETWORK|VPC|WAF|CLOUDFRONT|ALB|SECRETS))\b(?:\s*(?:\(\s*หน้า\s*([1-6])\s*\)|หน้า\s*([1-6])))?/gi;
+const PAGE_STANDALONE_RE = /หน้า\s*(\d{1,4})(?:\s*(?:[\-]|ถึง)\s*\d{1,4})?(?!\s*\/\s*1004)/g;
+
+// Precompiled OCR Split pairs
+const THAI_OCR_SPLIT_PAIRS: [RegExp, string][] = [
+  [/ท\s+า/g, "ทำ"],
+  [/ก\s+า/g, "กำ"],
+  [/จ\s+า/g, "จำ"],
+  [/ช\s+า/g, "ชำ"],
+  [/ส\s+า/g, "สำ"],
+  [/ล\s+า/g, "ลำ"],
+  [/ด\s+าเนิน/g, "ดำเนิน"],
+  [/ค\s+า/g, "คำ"],
+  [/น\s+า/g, "นำ"],
+  [/ต\s+า/g, "ตำ"],
+  [/อ\s+า/g, "อำ"],
+  [/ซ\s*[้ิ]?\s*้า/g, "ซ้ำ"],
+  [/ซ\s*้า/g, "ซ้ำ"],
+  [/ย\s*[้ิ]?\s*้า/g, "ย้ำ"],
+  [/น\s*[้ิ]?\s*้า/g, "น้ำ"],
+  [/ต\s*[่ิ]?\s*่า/g, "ต่ำ"],
+];
+
+// Precompiled OCR Vocab map
+const THAI_OCR_VOCAB_MAP: [RegExp, string][] = [
+  [/ชาระ/g, "ชำระ"],
+  [/จานวน/g, "จำนวน"],
+  [/สาหรับ/g, "สำหรับ"],
+  [/กาหนด/g, "กำหนด"],
+  [/สาเร็จ/g, "สำเร็จ"],
+  [/ลาดับ/g, "ลำดับ"],
+  [/คานวณ/g, "คำนวณ"],
+  [/ดาเนิน/g, "ดำเนิน"],
+  [/อานาจ/g, "อำนาจ"],
+  [/จาหน่าย/g, "จำหน่าย"],
+  [/กาไร/g, "กำไร"],
+  [/ใบกากับ/g, "ใบกำกับ"],
+  [/ซ้า/g, "ซ้ำ"],
+  [/ต่า/g, "ต่ำ"],
+  [/ทาการ/g, "ทำการ"],
+  [/ทาให้/g, "ทำให้"],
+  [/ทาได้/g, "ทำได้"],
+  [/ทางาน/g, "ทำงาน"],
+  [/ทารายการ/g, "ทำรายการ"],
+  [/ทารายงาน/g, "ทำรายงาน"],
+  [/ทาเอกสาร/g, "ทำเอกสาร"],
+  [/ทารับ/g, "ทำรับ"],
+  [/ทาเป็น/g, "ทำเป็น"],
+  [/ทาหน้าที่/g, "ทำหน้าที่"],
+  [/ไม่ทา/g, "ไม่ทำ"],
+  [/นาไป/g, "นำไป"],
+  [/นามา/g, "นำมา"],
+  [/นาส่ง/g, "นำส่ง"],
+  [/นาเข้า/g, "นำเข้า"],
+  [/นาออก/g, "นำออก"],
+  [/นาเงิน/g, "นำเงิน"],
+  [/นาข้อมูล/g, "นำข้อมูล"],
+  [/นาระบบ/g, "นำระบบ"],
+  [/คาสั่ง/g, "คำสั่ง"],
+  [/คาขอ/g, "คำขอ"],
+  [/คาอธิบาย/g, "คำอธิบาย"],
+  [/คาเตือน/g, "คำเตือน"],
+  [/คาถาม/g, "คำถาม"],
+  [/คาตอบ/g, "คำตอบ"],
+  [/คายืนยัน/g, "คำยืนยัน"],
+  [/ตาแหน่ง/g, "ตำแหน่ง"],
+  [/สารอง/g, "สำรอง"],
+  [/สาเนา/g, "สำเนา"],
+  [/สานักงาน/g, "สำนักงาน"],
+  [/สารวจ/g, "สำรวจ"],
+  [/สาคัญ/g, "สำคัญ"],
+  [/สากล/g, "สากล"],
+  [/น้ามัน/g, "น้ำมัน"],
+  [/น้าหนัก/g, "น้ำหนัก"],
+  [/รหัส\s+ที่/g, "รหัสที่"],
+  [/ปัด\s+เศษ/g, "ปัดเศษ"],
+  [/พิมพ์\s*Slip/g, "พิมพ์ Slip"],
+];
+
 /**
  * Sanitizes stray foreign language artifacts (Arabic, Chinese/CJK, fullwidth punctuation)
  * that multilingual LLMs (like Qwen) occasionally leak into Thai responses.
@@ -28,14 +117,14 @@ export function sanitizeThaiResponse(text: string): string {
 
   // 1. Common Arabic replacements
   cleaned = cleaned
-    .replace(/(?:\b|[\s(])مثل(?:\b|[\s)])/g, (match) => {
+    .replace(ARABIC_MATCH_RE, (match) => {
       if (match.startsWith("(") && match.endsWith(")")) return "(เช่น)";
       if (match.startsWith("(")) return "(เช่น ";
       if (match.endsWith(")")) return "เช่น)";
       return " เช่น ";
     })
-    .replace(/مثل/g, "เช่น")
-    .replace(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/g, "");
+    .replace(ARABIC_BARE_RE, "เช่น")
+    .replace(ARABIC_CHARS_RE, "");
 
   // 2. Fullwidth punctuation normalization (Chinese punctuation to standard)
   cleaned = cleaned
@@ -81,10 +170,10 @@ export function sanitizeThaiResponse(text: string): string {
     .replace(/或/g, " หรือ ");
 
   // 4. Strict removal of ANY remaining CJK characters (Ideographs, Extensions, Compatibility)
-  cleaned = cleaned.replace(/[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF\u3000-\u303F\uFF00-\uFFEF]/g, "");
+  cleaned = cleaned.replace(CJK_CHARS_RE, "");
 
   // 5. Clean up any resulting double spaces
-  cleaned = cleaned.replace(/([^\n\S]){2,}/g, " ");
+  cleaned = cleaned.replace(MULTI_SPACE_RE, " ");
 
   return cleaned;
 }
@@ -106,33 +195,29 @@ export function autoLinkBrAndCitations(rawText: string): string {
     return `__MD_LINK_${links.length - 1}__`;
   };
 
-  let processed = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, label, url) => {
+  let processed = text.replace(MD_LINK_RE, (match, label, url) => {
     return protectLink(label, url);
   });
 
   // 2. Transform BR codes and absorb any redundant trailing "หน้า XX" or "(หน้า XX)"
-  const brRegex = /(BR-\d{2}-\d{2}(?:-\d{2})?)(?:\s*(?:\(\s*หน้า\s*(\d{1,4})(?:\s*[\/\-]\s*\d{1,4})?\s*\)|หน้า\s*(\d{1,4})(?:\s*[\/\-]\s*\d{1,4})?))?(?:\s*(?=\)))?/g;
-  processed = processed.replace(brRegex, (match, brCode) => {
+  processed = processed.replace(BR_LINK_RE, (match, brCode) => {
     return protectLink(brCode, `/documents/br/${brCode}`);
   });
 
-  // 3. Transform AWS bracketed references: e.g. [AWS-04.1 Amazon EKS] (หน้า 3) or [AWS-05 OpenVPN]
-  const awsBracketRegex = /\[(AWS-\d{2}(?:\.\d)?(?:\s+[^\]\n]+)?)\](?:\s*(?:\(\s*หน้า\s*([1-6])\s*\)|หน้า\s*([1-6])))?/gi;
-  processed = processed.replace(awsBracketRegex, (match, title) => {
+  // 3. Transform AWS bracketed references
+  processed = processed.replace(AWS_BRACKET_RE, (match, title) => {
     const codeMatch = title.match(/AWS-\d{2}(?:\.\d)?/i);
     const code = codeMatch ? codeMatch[0].toUpperCase() : title;
     return protectLink(title, `/documents/aws?sec=${code}`);
   });
 
-  // 4. Transform AWS bare codes: e.g. AWS-04.1, AWS-05 (หน้า 4), AWS-EKS, AWS-OPENVPN
-  const awsBareRegex = /\b(AWS-(?:\d{2}(?:\.\d)?|EKS|OPENVPN|VPN|AURORA|REDIS|NETWORK|VPC|WAF|CLOUDFRONT|ALB|SECRETS))\b(?:\s*(?:\(\s*หน้า\s*([1-6])\s*\)|หน้า\s*([1-6])))?/gi;
-  processed = processed.replace(awsBareRegex, (match, awsCode) => {
+  // 4. Transform AWS bare codes
+  processed = processed.replace(AWS_BARE_RE, (match, awsCode) => {
     return protectLink(awsCode, `/documents/aws?sec=${awsCode.toUpperCase()}`);
   });
 
-  // 5. Standalone DSD pages (e.g. หน้า 33-37 or หน้า 558)
-  const pageRegex = /หน้า\s*(\d{1,4})(?:\s*(?:[\-]|ถึง)\s*\d{1,4})?(?!\s*\/\s*1004)/g;
-  processed = processed.replace(pageRegex, (match, pageNum) => {
+  // 5. Standalone DSD pages
+  processed = processed.replace(PAGE_STANDALONE_RE, (match, pageNum) => {
     const page = parseInt(pageNum, 10);
     if (page >= 1 && page <= 1004) {
       return protectLink(match, `/docs/DSD-PTTRM-JIFFY-RETAIL-V1.0_Signed.pdf#page=${page}`);
@@ -158,86 +243,16 @@ export function cleanThaiOcrText(text: string): string {
   if (!text) return text;
   let s = text;
 
-  // 1. Split Sara Am / Sara Aa with space e.g. 'ท า' -> 'ทำ', 'ก า' -> 'กำ'
-  const splitPairs: [RegExp, string][] = [
-    [/ท\s+า/g, "ทำ"],
-    [/ก\s+า/g, "กำ"],
-    [/จ\s+า/g, "จำ"],
-    [/ช\s+า/g, "ชำ"],
-    [/ส\s+า/g, "สำ"],
-    [/ล\s+า/g, "ลำ"],
-    [/ด\s+าเนิน/g, "ดำเนิน"],
-    [/ค\s+า/g, "คำ"],
-    [/น\s+า/g, "นำ"],
-    [/ต\s+า/g, "ตำ"],
-    [/อ\s+า/g, "อำ"],
-    [/ซ\s*[้ิ]?\s*้า/g, "ซ้ำ"],
-    [/ซ\s*้า/g, "ซ้ำ"],
-    [/ย\s*[้ิ]?\s*้า/g, "ย้ำ"],
-    [/น\s*[้ิ]?\s*้า/g, "น้ำ"],
-    [/ต\s*[่ิ]?\s*่า/g, "ต่ำ"]
-  ];
-  for (const [p, r] of splitPairs) {
-    s = s.replace(p, r);
+  // 1. Split Sara Am / Sara Aa with space
+  for (let i = 0; i < THAI_OCR_SPLIT_PAIRS.length; i++) {
+    const [pattern, replacement] = THAI_OCR_SPLIT_PAIRS[i];
+    s = s.replace(pattern, replacement);
   }
 
-  // 2. Vocabulary with missing Sara-Am from font encoding anomalies
-  const vocabMap: [RegExp, string][] = [
-    [/ชาระ/g, "ชำระ"],
-    [/จานวน/g, "จำนวน"],
-    [/สาหรับ/g, "สำหรับ"],
-    [/กาหนด/g, "กำหนด"],
-    [/สาเร็จ/g, "สำเร็จ"],
-    [/ลาดับ/g, "ลำดับ"],
-    [/คานวณ/g, "คำนวณ"],
-    [/ดาเนิน/g, "ดำเนิน"],
-    [/อานาจ/g, "อำนาจ"],
-    [/จาหน่าย/g, "จำหน่าย"],
-    [/กาไร/g, "กำไร"],
-    [/ใบกากับ/g, "ใบกำกับ"],
-    [/ซ้า/g, "ซ้ำ"],
-    [/ต่า/g, "ต่ำ"],
-    [/ทาการ/g, "ทำการ"],
-    [/ทาให้/g, "ทำให้"],
-    [/ทาได้/g, "ทำได้"],
-    [/ทางาน/g, "ทำงาน"],
-    [/ทารายการ/g, "ทำรายการ"],
-    [/ทารายงาน/g, "ทำรายงาน"],
-    [/ทาเอกสาร/g, "ทำเอกสาร"],
-    [/ทารับ/g, "ทำรับ"],
-    [/ทาเป็น/g, "ทำเป็น"],
-    [/ทาหน้าที่/g, "ทำหน้าที่"],
-    [/ไม่ทา/g, "ไม่ทำ"],
-    [/นาไป/g, "นำไป"],
-    [/นามา/g, "นำมา"],
-    [/นาส่ง/g, "นำส่ง"],
-    [/นาเข้า/g, "นำเข้า"],
-    [/นาออก/g, "นำออก"],
-    [/นาเงิน/g, "นำเงิน"],
-    [/นาข้อมูล/g, "นำข้อมูล"],
-    [/นาระบบ/g, "นำระบบ"],
-    [/คาสั่ง/g, "คำสั่ง"],
-    [/คาขอ/g, "คำขอ"],
-    [/คาอธิบาย/g, "คำอธิบาย"],
-    [/คาเตือน/g, "คำเตือน"],
-    [/คาถาม/g, "คำถาม"],
-    [/คาตอบ/g, "คำตอบ"],
-    [/คายืนยัน/g, "คำยืนยัน"],
-    [/ตาแหน่ง/g, "ตำแหน่ง"],
-    [/สารอง/g, "สำรอง"],
-    [/สาเนา/g, "สำเนา"],
-    [/สานักงาน/g, "สำนักงาน"],
-    [/สารวจ/g, "สำรวจ"],
-    [/สาคัญ/g, "สำคัญ"],
-    [/สากล/g, "สากล"],
-    [/น้ามัน/g, "น้ำมัน"],
-    [/น้าหนัก/g, "น้ำหนัก"],
-    [/รหัส\s+ที่/g, "รหัสที่"],
-    [/ปัด\s+เศษ/g, "ปัดเศษ"],
-    [/พิมพ์\s*Slip/g, "พิมพ์ Slip"]
-  ];
-  for (const [p, r] of vocabMap) {
-    s = s.replace(p, r);
+  // 2. Vocabulary with missing Sara-Am
+  for (let i = 0; i < THAI_OCR_VOCAB_MAP.length; i++) {
+    const [pattern, replacement] = THAI_OCR_VOCAB_MAP[i];
+    s = s.replace(pattern, replacement);
   }
 
   return s;
