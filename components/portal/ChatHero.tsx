@@ -14,7 +14,7 @@ import {
   Cloud,
 } from "lucide-react";
 import { NongJiffyAvatar } from "@/components/ui/NongJiffyAvatar";
-import { autoLinkBrAndCitations } from "@/lib/utils";
+import { autoLinkBrAndCitations, sanitizeThaiResponse } from "@/lib/utils";
 import { BrDetailModal } from "./BrDetailModal";
 import { AwsDetailModal } from "./AwsDetailModal";
 import { Message } from "./types";
@@ -71,7 +71,7 @@ export const ChatHero = memo(function ChatHero({
   }, [messages, isLoading]);
 
   const handleCopy = (id: string, text: string) => {
-    navigator.clipboard.writeText(text);
+    navigator.clipboard.writeText(sanitizeThaiResponse(text));
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };

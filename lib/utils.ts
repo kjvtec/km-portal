@@ -19,13 +19,15 @@ export function formatDate(dateString: string | Date): string {
 }
 
 /**
- * Sanitizes stray multilingual artifacts (such as Arabic 'مثل' -> 'เช่น', or stray Arabic/foreign tokens)
- * that multilingual LLMs occasionally slip into Thai responses.
+ * Sanitizes stray foreign language artifacts (Arabic, Chinese/CJK, fullwidth punctuation)
+ * that multilingual LLMs (like Qwen) occasionally leak into Thai responses.
  */
 export function sanitizeThaiResponse(text: string): string {
   if (!text) return text;
-  return text
-    // Replace Arabic "مثل" (mithl = such as) with Thai "เช่น"
+  let cleaned = text;
+
+  // 1. Common Arabic replacements
+  cleaned = cleaned
     .replace(/(?:\b|[\s(])مثل(?:\b|[\s)])/g, (match) => {
       if (match.startsWith("(") && match.endsWith(")")) return "(เช่น)";
       if (match.startsWith("(")) return "(เช่น ";
@@ -33,8 +35,58 @@ export function sanitizeThaiResponse(text: string): string {
       return " เช่น ";
     })
     .replace(/مثل/g, "เช่น")
-    // Clean up any stray Arabic script characters accidentally leaked into Thai text
     .replace(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/g, "");
+
+  // 2. Fullwidth punctuation normalization (Chinese punctuation to standard)
+  cleaned = cleaned
+    .replace(/（/g, " (")
+    .replace(/）/g, ") ")
+    .replace(/：/g, ": ")
+    .replace(/，/g, ", ")
+    .replace(/。/g, " ")
+    .replace(/、/g, ", ")
+    .replace(/【/g, " [")
+    .replace(/】/g, "] ")
+    .replace(/；/g, "; ");
+
+  // 3. Technical & contextual Chinese word replacements (translating to standard Thai retail/cloud terms)
+  cleaned = cleaned
+    .replace(/副本/g, "ชุดสำรอง")
+    .replace(/例如|比如/g, "เช่น")
+    .replace(/包括/g, "รวมถึง")
+    .replace(/配置/g, "การกำหนดค่า")
+    .replace(/节点/g, "โหนด")
+    .replace(/集群/g, "คลัสเตอร์")
+    .replace(/数据库/g, "ฐานข้อมูล")
+    .replace(/服务|服務/g, "บริการ")
+    .replace(/容器/g, "คอนเทนเนอร์")
+    .replace(/网络|網絡/g, "เครือข่าย")
+    .replace(/参数|參數/g, "พารามิเตอร์")
+    .replace(/状态|狀態/g, "สถานะ")
+    .replace(/错误|錯誤/g, "ข้อผิดพลาด")
+    .replace(/成功/g, "สำเร็จ")
+    .replace(/失败|失敗/g, "ล้มเหลว")
+    .replace(/正常/g, "ปกติ")
+    .replace(/异常|異常/g, "ผิดปกติ")
+    .replace(/安全/g, "ความปลอดภัย")
+    .replace(/访问|訪問/g, "การเข้าถึง")
+    .replace(/连接|連接/g, "การเชื่อมต่อ")
+    .replace(/权限|權限/g, "สิทธิ์การเข้าถึง")
+    .replace(/数量/g, "จำนวน")
+    .replace(/用户|用戶/g, "ผู้ใช้")
+    .replace(/客户端|客戶端/g, "ไคลเอนต์")
+    .replace(/等/g, " เป็นต้น")
+    .replace(/的/g, "ของ")
+    .replace(/和/g, " และ ")
+    .replace(/或/g, " หรือ ");
+
+  // 4. Strict removal of ANY remaining CJK characters (Ideographs, Extensions, Compatibility)
+  cleaned = cleaned.replace(/[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF\u3000-\u303F\uFF00-\uFFEF]/g, "");
+
+  // 5. Clean up any resulting double spaces
+  cleaned = cleaned.replace(/([^\n\S]){2,}/g, " ");
+
+  return cleaned;
 }
 
 /**
