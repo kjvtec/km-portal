@@ -123,64 +123,65 @@ export function BrDetailModal({ brCode, onClose, onAskAi }: BrDetailModalProps) 
         </div>
 
         {/* Tab & Action Toolbar */}
-        <div className="bg-slate-50 border-b border-slate-200 px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 shrink-0">
-          <div className="flex items-center gap-1.5 bg-slate-200/70 p-1 rounded-xl text-xs font-semibold">
+        <div className="bg-slate-50 border-b border-slate-200 px-3 sm:px-6 py-2.5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 shrink-0">
+          <div className="grid grid-cols-2 sm:flex items-center gap-1 bg-slate-200/70 p-1 rounded-xl text-xs font-semibold">
             <button
               onClick={() => setActiveTab("detail")}
-              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer text-center ${
                 activeTab === "detail"
-                  ? "bg-white text-blue-700 shadow-2xs"
+                  ? "bg-white text-blue-700 shadow-2xs font-bold"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              เนื้อหาข้อกำหนดฉบับทางการ
+              <span className="hidden sm:inline">เนื้อหาข้อกำหนดฉบับทางการ</span>
+              <span className="sm:hidden">รายละเอียด</span>
             </button>
             <button
               onClick={() => setActiveTab("pdf")}
-              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 text-center ${
                 activeTab === "pdf"
-                  ? "bg-white text-blue-700 shadow-2xs"
+                  ? "bg-white text-blue-700 shadow-2xs font-bold"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              <FileText className="h-3.5 w-3.5" />
-              <span>เอกสาร PDF ฉบับจริง (หน้า {detail.page})</span>
+              <FileText className="h-3.5 w-3.5 shrink-0" />
+              <span>PDF หน้า {detail.page}</span>
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 justify-end flex-wrap">
             <button
               onClick={handleCopyContent}
-              className="inline-flex items-center gap-1 text-xs font-medium text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-300 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1 text-xs font-medium text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-300 px-2 sm:px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
               title="คัดลอกข้อกำหนด"
             >
               {copied ? (
                 <>
-                  <Check className="h-3.5 w-3.5 text-emerald-600" />
-                  <span className="text-emerald-700 font-semibold">คัดลอกแล้ว</span>
+                  <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                  <span className="text-emerald-700 font-semibold text-[11px] sm:text-xs">คัดลอกแล้ว</span>
                 </>
               ) : (
                 <>
-                  <Copy className="h-3.5 w-3.5 text-slate-500" />
-                  <span>คัดลอก</span>
+                  <Copy className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                  <span className="text-[11px] sm:text-xs">คัดลอก</span>
                 </>
               )}
             </button>
 
             <button
               onClick={handleCopyShareLink}
-              className="inline-flex items-center gap-1 text-xs font-medium text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-300 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1 text-xs font-medium text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-300 px-2 sm:px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
               title="คัดลอกลิงก์แชร์ข้อกำหนดนี้"
             >
               {copiedLink ? (
                 <>
-                  <Check className="h-3.5 w-3.5 text-emerald-600" />
-                  <span className="text-emerald-700 font-semibold">คัดลอกลิงก์แล้ว</span>
+                  <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                  <span className="text-emerald-700 font-semibold text-[11px] sm:text-xs">คัดลอกแล้ว</span>
                 </>
               ) : (
                 <>
-                  <Share2 className="h-3.5 w-3.5 text-slate-500" />
-                  <span>แชร์</span>
+                  <Share2 className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                  <span className="text-[11px] sm:text-xs">แชร์</span>
                 </>
               )}
             </button>
@@ -189,20 +190,20 @@ export function BrDetailModal({ brCode, onClose, onAskAi }: BrDetailModalProps) 
               href={pdfUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs font-medium text-slate-700 hover:text-blue-700 bg-white hover:bg-blue-50 border border-slate-300 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
-              title="เปิดไฟล์ PDF หน้า 37 ในแท็บใหม่"
+              className="inline-flex items-center gap-1 text-xs font-medium text-slate-700 hover:text-blue-700 bg-white hover:bg-blue-50 border border-slate-300 px-2 sm:px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+              title={`เปิดไฟล์ PDF หน้า ${detail.page} ในแท็บใหม่`}
             >
-              <ExternalLink className="h-3.5 w-3.5" />
-              <span>เปิด PDF แท็บใหม่</span>
+              <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+              <span className="hidden sm:inline">เปิด PDF แท็บใหม่</span>
             </a>
 
             {onAskAi && (
               <button
                 onClick={handleAsk}
-                className="inline-flex items-center gap-1 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg transition-colors shadow-2xs cursor-pointer"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 px-2.5 sm:px-3 py-1.5 rounded-lg transition-colors shadow-2xs cursor-pointer shrink-0"
               >
-                <Sparkles className="h-3.5 w-3.5" />
-                <span>ถาม AI</span>
+                <Sparkles className="h-3.5 w-3.5 shrink-0" />
+                <span className="text-[11px] sm:text-xs">ถาม AI</span>
               </button>
             )}
           </div>

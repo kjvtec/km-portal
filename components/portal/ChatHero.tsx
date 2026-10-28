@@ -100,25 +100,25 @@ export const ChatHero = memo(function ChatHero({
   return (
     <div className="rounded-3xl border border-slate-200 bg-white shadow-xl overflow-hidden flex flex-col">
       {/* Chat Header Bar */}
-      <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 text-white px-5 sm:px-8 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3.5">
-          <div className="relative">
+      <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 text-white px-4 sm:px-8 py-3.5 sm:py-4 flex items-center justify-between gap-2.5">
+        <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+          <div className="relative shrink-0">
             <NongJiffyAvatar
-              size="lg"
-              className="h-12 w-12 ring-2 ring-cyan-400/60 ring-offset-2 ring-offset-slate-900"
+              size="md"
+              className="h-10 w-10 sm:h-12 sm:w-12 ring-2 ring-cyan-400/60 ring-offset-2 ring-offset-slate-900"
             />
-            <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full bg-emerald-400 border-2 border-slate-900"></span>
+            <span className="absolute bottom-0 right-0 h-3 w-3 sm:h-3.5 sm:w-3.5 rounded-full bg-emerald-400 border-2 border-slate-900"></span>
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-1.5">
-                <span>น้อง Jiffy (AI Knowledge Assistant)</span>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+              <h2 className="text-sm sm:text-lg font-bold text-white truncate">
+                <span>น้อง Jiffy (AI Assistant)</span>
               </h2>
-              <span className="rounded-md bg-cyan-400/20 text-cyan-300 border border-cyan-400/30 px-2 py-0.5 text-[10px] font-bold">
+              <span className="shrink-0 rounded-md bg-cyan-400/20 text-cyan-300 border border-cyan-400/30 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold">
                 DSD V1.0 Signed
               </span>
             </div>
-            <p className="text-xs text-slate-300 mt-0.5">
+            <p className="hidden sm:block text-xs text-slate-300 mt-0.5 truncate">
               ผู้ช่วยตอบคำถามจากเอกสาร DSD ฉบับทางการ 1,004 หน้า (977 Chunks • Groq Qwen 3.8 27B)
             </p>
           </div>
@@ -126,7 +126,7 @@ export const ChatHero = memo(function ChatHero({
 
         <button
           onClick={handleReset}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 px-3.5 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-700 hover:text-white transition-colors cursor-pointer"
+          className="shrink-0 inline-flex items-center gap-1 rounded-xl border border-slate-700 bg-slate-800/80 px-2.5 py-1.5 sm:px-3.5 sm:py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-700 hover:text-white transition-colors cursor-pointer"
           title="เริ่มบทสนทนาใหม่"
         >
           <RefreshCw className="h-3.5 w-3.5" />
@@ -135,15 +135,15 @@ export const ChatHero = memo(function ChatHero({
       </div>
 
       {/* Quick Suggested Prompt Chips with Random Shuffle */}
-      <div className="bg-slate-50 border-b border-slate-200 px-5 sm:px-8 py-2.5 overflow-x-auto flex items-center gap-2 text-xs scrollbar-thin">
-        <div className="flex items-center gap-1.5 shrink-0 pr-1 border-r border-slate-200">
-          <span className="text-[11px] font-bold text-slate-500 uppercase">คำถามแนะนำ:</span>
+      <div className="bg-slate-50 border-b border-slate-200 px-3 sm:px-8 py-2 overflow-x-auto flex items-center gap-2 text-xs scrollbar-none">
+        <div className="flex items-center gap-1 shrink-0 pr-1.5 border-r border-slate-200">
+          <span className="hidden sm:inline text-[11px] font-bold text-slate-500 uppercase">คำถามแนะนำ:</span>
           <button
             onClick={shuffleSuggestions}
-            className="inline-flex items-center gap-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200/80 px-2 py-0.5 text-[11px] font-semibold transition-colors cursor-pointer shadow-2xs"
+            className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200/80 px-2 py-1 text-[11px] font-semibold transition-colors cursor-pointer shadow-2xs whitespace-nowrap"
             title="คลิกเพื่อสุ่มคำถามแนะนำชุดใหม่จากคลัง DSD"
           >
-            <Dices className="h-3.5 w-3.5 text-blue-600" />
+            <Dices className="h-3.5 w-3.5 text-blue-600 shrink-0" />
             <span>สุ่มใหม่</span>
           </button>
         </div>
@@ -153,7 +153,7 @@ export const ChatHero = memo(function ChatHero({
             key={idx}
             onClick={() => handleSelectSuggestion(q.query)}
             disabled={isLoading}
-            className="shrink-0 rounded-full border border-slate-300 bg-white hover:border-blue-500 hover:bg-blue-50 px-3 py-1.5 text-slate-700 transition-colors hover:text-blue-700 text-xs font-medium shadow-2xs cursor-pointer disabled:opacity-50 flex items-center gap-1"
+            className="shrink-0 rounded-full border border-slate-300 bg-white hover:border-blue-500 hover:bg-blue-50 px-3 py-1.5 text-slate-700 transition-colors hover:text-blue-700 text-xs font-medium shadow-2xs cursor-pointer disabled:opacity-50 flex items-center gap-1 whitespace-nowrap"
           >
             <span>{q.label}</span>
           </button>
@@ -362,34 +362,34 @@ export const ChatHero = memo(function ChatHero({
       </div>
 
       {/* Chat Input Bar */}
-      <div className="p-4 sm:p-5 bg-white border-t border-slate-200">
+      <div className="p-3 sm:p-5 bg-white border-t border-slate-200">
         {error && (
           <div className="mb-2 text-xs text-rose-600 bg-rose-50 border border-rose-200 rounded-xl p-2.5">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="flex items-center gap-2.5">
+        <form onSubmit={handleSubmit} className="flex items-center gap-2 sm:gap-2.5">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="พิมพ์คำถามเกี่ยวกับข้อกำหนด DSD (เช่น WAC คำนวณตอนไหน, Tolerance ±5%, DC วังน้อย)..."
+            placeholder="พิมพ์คำถามเกี่ยวกับข้อกำหนด DSD หรือ AWS..."
             disabled={isLoading}
-            className="flex-1 rounded-2xl border border-slate-300 px-5 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent bg-slate-50/80 hover:bg-white transition-colors"
+            className="flex-1 min-w-0 rounded-xl sm:rounded-2xl border border-slate-300 px-3.5 py-2.5 sm:px-5 sm:py-3.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent bg-slate-50/80 hover:bg-white transition-colors"
           />
 
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className={`inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3.5 text-sm font-semibold transition-all shadow-md ${
+            className={`shrink-0 inline-flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl sm:rounded-2xl px-3.5 py-2.5 sm:px-6 sm:py-3.5 text-xs sm:text-sm font-semibold transition-all shadow-md ${
               isLoading || !input.trim()
                 ? "bg-slate-200 text-slate-400 cursor-not-allowed"
                 : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 active:scale-95 shadow-blue-500/25 cursor-pointer"
             }`}
           >
-            <span>ส่งคำถาม</span>
-            <Send className="h-4 w-4" />
+            <span className="hidden sm:inline">ส่งคำถาม</span>
+            <Send className="h-4 w-4 shrink-0" />
           </button>
         </form>
       </div>

@@ -31,35 +31,35 @@ export const QuickActionsBar = memo(function QuickActionsBar({
         </div>
       </div>
 
-      <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end flex-wrap">
+      <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
         <Link
           href="/documents"
-          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors shadow-2xs"
+          className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors shadow-2xs text-center"
         >
-          <BookOpen className="h-3.5 w-3.5 text-slate-500" />
-          <span>สืบค้นเอกสารทั้งหมด</span>
+          <BookOpen className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+          <span>สืบค้นเอกสาร</span>
         </Link>
 
         <Link
           href="/documents/upload"
-          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors shadow-2xs"
+          className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors shadow-2xs text-center"
         >
-          <Upload className="h-3.5 w-3.5 text-slate-500" />
+          <Upload className="h-3.5 w-3.5 text-slate-500 shrink-0" />
           <span>อัปโหลดเพิ่ม</span>
         </Link>
 
         <button
           onClick={onSeed}
           disabled={seeding}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3.5 py-2 text-xs font-semibold text-white hover:bg-slate-800 disabled:opacity-50 transition-colors cursor-pointer shadow-xs"
+          className="col-span-2 sm:col-span-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-900 px-3.5 py-2 text-xs font-semibold text-white hover:bg-slate-800 disabled:opacity-50 transition-colors cursor-pointer shadow-xs text-center"
           title="ซิงค์ฐานข้อมูล DSD Signed Chunks เข้าสู่ระบบ Supabase"
         >
           {seeding ? (
-            <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+            <RefreshCw className="h-3.5 w-3.5 animate-spin shrink-0" />
           ) : seedResult?.success ? (
-            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
           ) : (
-            <Database className="h-3.5 w-3.5 text-cyan-400" />
+            <Database className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
           )}
           <span>{seeding ? "กำลังซิงค์..." : "ซิงค์คลัง DSD"}</span>
         </button>
