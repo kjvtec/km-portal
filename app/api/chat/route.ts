@@ -1,6 +1,7 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { streamText } from "ai";
 import { searchSimilarChunks } from "@/lib/ai/search";
+import { buildGroundTruthContext } from "@/lib/ai/knowledge-catalog";
 
 export const maxDuration = 45; // Support longer streaming for Vercel
 
@@ -43,7 +44,8 @@ export async function POST(req: Request) {
     const query = latestUserMessage ? latestUserMessage.content : "";
 
     // 1. Perform retrieval if there is a query
-    let contextText = "";
+    const groundTruth = query ? buildGroundTruthContext(query) : "";
+    let contextText = groundTruth ? `${groundTruth}\n\n` : "";
     const sourceDocuments: Array<{ title: string; similarity: number }> = [];
 
     if (query && query.trim().length > 0) {
@@ -55,12 +57,13 @@ export async function POST(req: Request) {
         });
 
         if (matchedChunks.length > 0) {
-          contextText = matchedChunks
+          const semanticText = matchedChunks
             .map(
               (chunk, i) =>
                 `--- [เอกสารอ้างอิงที่ ${i + 1}: ${chunk.title} (ความเกี่ยวข้อง: ${(chunk.similarity * 100).toFixed(0)}%)] ---\n${chunk.content}`
             )
             .join("\n\n");
+          contextText += semanticText;
 
           for (const chunk of matchedChunks) {
             if (!sourceDocuments.some((s) => s.title === chunk.title)) {
@@ -81,7 +84,12 @@ export async function POST(req: Request) {
 1. เอกสารข้อกำหนดและการออกแบบระบบ DSD PTTRM JIFFY RETAIL V1.0 (Signed ฉบับทางการ 1,004 หน้า หมวด BA-01 ถึง BA-09)
 2. เอกสารสถาปัตยกรรมโครงสร้างพื้นฐานคลาวด์ AWS (AWS Resource Summary Report DEV Environment v1.5 โดย DailiTech: Multi-Account, EKS Cluster k8s v1.35, Aurora PostgreSQL 17.5, ElastiCache Redis 7.1, CloudFront, Public ALB, AWS WAF, OpenVPN, Subnets)
 
-🎯 หน้าที่ของคุณ: ตอบคำถามให้ "อ่านง่ายที่สุด ชัดเจน เป็นระเบียบสวยงาม ถูกต้องตามหลักภาษาไทย และเข้าประเด็นทันที"
+🎯 หน้าที่ของคุณ: ตอบคำถามให้ "ถูกต้องตามข้อกำหนดทางการ 100% อ่านง่าย ชัดเจน เป็นระเบียบสวยงาม และเข้าประเด็นทันที"
+
+กฎความถูกต้องของโครงสร้างและจำนวนข้อ (STRICT STRUCTURAL ACCURACY & COMPLETENESS):
+- เมื่อผู้ใช้ถามถึงจำนวนข้อ, หัวข้อที่มี, หรือภาพรวมของหมวด (เช่น BA-01 ถึง BA-09, DSD, AWS): คุณต้องยึดถือข้อมูลสถิติที่เป็นทางการในส่วนบริบทอย่างเคร่งครัด 100% ห้ามเดา ห้ามประมาณ และห้ามตอบจำนวนข้อผิดเด็ดขาด!
+- กฎเฉพาะหมวด BA-06: หมวด BA-06 มีทั้งหมด "11 หัวข้อหลัก (BR-06-01 ถึง BR-06-11)" และมีข้อกำหนดย่อยรวมทั้งสิ้น "53 ข้อ" (ครอบคลุมหน้า 548 - 685) ต้องตอบว่า 11 หัวข้อหลัก และแจกแจงรายชื่อหัวข้อหลักทั้ง 11 หัวข้อในตารางให้ครบทุกข้อเสมอ ห้ามตอบ 5 ข้อ หรือตัวเลขอื่นเด็ดขาด
+- ตารางแจกแจงหัวข้อ: หากผู้ใช้ถามว่ามีกี่ข้อหรือมีอะไรบ้าง ให้สรุปเป็นตาราง Markdown Table ที่แสดง [ลำดับ, รหัสหัวข้อ, ชื่อหัวข้อข้อกำหนด, จำนวนข้อย่อย, หน้าอ้างอิง] ครบถ้วนทุกแถว
 
 กฎการใช้ภาษาไทยที่ถูกต้อง (STRICT LANGUAGE INTEGRITY):
 - สื่อสารด้วย "ภาษาไทยมาตรฐานที่ถูกต้อง สละสลวย เป็นทางการ และเป็นธรรมชาติ" เท่านั้น
@@ -92,7 +100,7 @@ export async function POST(req: Request) {
 
 กฎเหล็กในการจัดรูปแบบคำตอบ (STRICT FORMATTING RULES):
 1. กล่องสรุปใจความสำคัญ (Executive Summary): บรรทัดแรกสุดของคำตอบต้องขึ้นต้นด้วย blockquote เพื่อสรุปคำตอบสั้นๆ 1-2 ประโยคเสมอ เช่น:
-   > **💡 สรุป:** [ใจความสำคัญที่ตอบตรงคำถามทันที ห้ามเกริ่นนำเยิ่นเย้อ ห้ามขึ้นต้นด้วย "ตามข้อมูลในเอกสาร..."]
+   > **💡 สรุป:** [ใจความสำคัญที่ตอบตรงคำถามทันที ระบุจำนวนข้อและประเด็นหลักทันที ห้ามเกริ่นนำเยิ่นเย้อ ห้ามขึ้นต้นด้วย "ตามข้อมูลในเอกสาร..."]
 
 2. แบ่งหัวข้อด้วย Heading (###) เสมอ: ห้ามเขียนหัวข้อเป็นข้อความธรรมดา ให้ใช้ ### 1. [ชื่อหัวข้อ] หรือ ### 2. [ชื่อหัวข้อ] ทุกครั้ง
 
@@ -103,9 +111,9 @@ export async function POST(req: Request) {
 4. ตารางสรุป (Markdown Table):
    - หากมีข้อมูลหลายประเภท หลายรายการ สเปกทรัพยากร หรือการเปรียบเทียบ ให้สรุปเป็นตาราง Markdown Table ที่มีเครื่องหมายไปป์ (|) เสมอ ห้ามเว้นวรรคด้วยช่องว่าง
    - ตัวอย่าง:
-     | บริการ / หมวด | รายละเอียด / สเปก | หมายเหตุ / รหัส |
-     | :--- | :--- | :--- |
-     | **Amazon EKS** | vtechq-eks-dev (k8s 1.35) | Node m6i.large |
+     | ลำดับ | รหัสหัวข้อ | ชื่อหัวข้อกำหนด | จำนวนข้อย่อย | หน้าอ้างอิง |
+     | :---: | :--- | :--- | :---: | :---: |
+     | 1 | **BR-06-01** | การสั่งซื้อสินค้า (Procurement & Suggest Order) | 5 ข้อ | หน้า 551 |
 
 5. ห้ามพูดซ้ำซ้อน: หากแจกแจงในหัวข้อย่อยหรือตารางแล้ว ห้ามเขียนย่อหน้าสรุปข้อความเดิมซ้ำอีก
 
