@@ -202,17 +202,50 @@ export const ChatHero = memo(function ChatHero({
                           <span>{children}</span>
                         </h3>
                       ),
+                      ol: ({ children }) => {
+                        let stepCount = 0;
+                        return (
+                          <ol className="not-prose my-2.5 space-y-2 list-none pl-0">
+                            {React.Children.map(children, (child) => {
+                              if (React.isValidElement(child)) {
+                                stepCount++;
+                                return React.cloneElement(child as React.ReactElement<any>, {
+                                  "data-ordered": true,
+                                  "data-step": stepCount,
+                                });
+                              }
+                              return child;
+                            })}
+                          </ol>
+                        );
+                      },
                       ul: ({ children }) => (
                         <ul className="not-prose my-2 space-y-2 list-none pl-0">
                           {children}
                         </ul>
                       ),
-                      li: ({ children }) => (
-                        <li className="flex items-start gap-2.5 text-slate-800 text-sm leading-relaxed">
-                          <span className="h-1.5 w-1.5 rounded-full bg-blue-500 mt-2 shrink-0"></span>
-                          <div className="flex-1">{children}</div>
-                        </li>
-                      ),
+                      li: (props: any) => {
+                        const isOrdered = props["data-ordered"] === true;
+                        const stepNumber = props["data-step"] || 1;
+
+                        if (isOrdered) {
+                          return (
+                            <li className="flex items-start gap-2.5 text-slate-800 text-sm leading-relaxed my-1">
+                              <span className="h-5 w-5 rounded-md bg-blue-600 text-white font-mono font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                                {stepNumber}
+                              </span>
+                              <div className="flex-1 font-medium">{props.children}</div>
+                            </li>
+                          );
+                        }
+
+                        return (
+                          <li className="flex items-start gap-2.5 text-slate-800 text-sm leading-relaxed my-1">
+                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 mt-2 shrink-0"></span>
+                            <div className="flex-1">{props.children}</div>
+                          </li>
+                        );
+                      },
                       table: ({ children }) => (
                         <div className="not-prose my-3.5 overflow-x-auto rounded-xl border border-slate-200 shadow-2xs bg-white">
                           <table className="w-full text-xs text-left text-slate-700 divide-y divide-slate-200">

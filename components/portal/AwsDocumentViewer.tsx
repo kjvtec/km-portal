@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import {
   Cloud,
   FileText,
@@ -20,6 +18,7 @@ import {
   Network,
 } from "lucide-react";
 import { getAwsDetail } from "@/lib/aws-details";
+import { MarkdownRenderer } from "./MarkdownRenderer";
 
 interface AwsDocumentViewerProps {
   content: string;
@@ -239,11 +238,7 @@ export function AwsDocumentViewer({ content }: AwsDocumentViewerProps) {
       {/* Main Content Area */}
       {activeTab === "doc" ? (
         <article className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-10 shadow-sm">
-          <div className="prose prose-slate max-w-none text-sm leading-relaxed prose-headings:font-bold prose-h1:text-xl prose-h2:text-lg prose-h2:mt-8 prose-h2:mb-3 prose-h2:pb-2 prose-h2:border-b prose-h2:border-slate-200 prose-h3:text-base prose-h3:mt-4 prose-table:text-xs prose-table:my-4 prose-th:bg-slate-100 prose-td:border-slate-200 prose-pre:bg-slate-900 prose-pre:text-slate-100 prose-code:text-blue-600 prose-code:font-mono">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {content}
-            </ReactMarkdown>
-          </div>
+          <MarkdownRenderer content={content} />
         </article>
       ) : (
         <div className="rounded-3xl border border-slate-300 bg-white overflow-hidden shadow-sm h-[800px] flex flex-col">

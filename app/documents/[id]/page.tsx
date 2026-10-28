@@ -2,8 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getServiceSupabase } from "@/lib/supabase/admin";
 import { formatDate } from "@/lib/utils";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { MarkdownRenderer } from "@/components/portal/MarkdownRenderer";
 import {
   ArrowLeft,
   Calendar,
@@ -91,11 +90,7 @@ export default async function DocumentDetailPage({ params }: PageProps) {
             </div>
 
             {/* Markdown Body */}
-            <div className="prose prose-slate max-w-none text-sm leading-relaxed prose-headings:font-bold prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-table:text-xs">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {doc.content || "ไม่มีเนื้อหาในเอกสารฉบับนี้"}
-              </ReactMarkdown>
-            </div>
+            <MarkdownRenderer content={doc.content || "ไม่มีเนื้อหาในเอกสารฉบับนี้"} />
           </article>
         </div>
 

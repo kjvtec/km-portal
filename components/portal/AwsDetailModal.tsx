@@ -1,8 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import {
   X,
   FileText,
@@ -15,6 +13,8 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { getAwsDetail, AwsDetail } from "@/lib/aws-details";
+import { cleanThaiOcrText } from "@/lib/utils";
+import { MarkdownRenderer } from "./MarkdownRenderer";
 
 interface AwsDetailModalProps {
   awsCode: string;
@@ -56,7 +56,8 @@ export function AwsDetailModal({ awsCode, onClose, onAskAi }: AwsDetailModalProp
   const pdfUrl = `/docs/PTTRM_VTEC_JIFFY_POS_Resource_Summary_DEV_TH.pdf#page=${detail.page}`;
 
   const handleCopyContent = () => {
-    const textToCopy = `[${detail.code}] ${detail.title}\nอ้างอิง: ${detail.section} (หน้า ${detail.page} / 6)\n\n${detail.content}`;
+    const cleaned = cleanThaiOcrText(detail.content);
+    const textToCopy = `[${detail.code}] ${detail.title}\nอ้างอิง: ${detail.section} (หน้า ${detail.page} / 6)\n\n${cleaned}`;
     navigator.clipboard.writeText(textToCopy);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -204,27 +205,49 @@ export function AwsDetailModal({ awsCode, onClose, onAskAi }: AwsDetailModalProp
         </div>
 
         {/* Modal Body */}
-        <div className="flex-1 overflow-y-auto p-6 bg-slate-50">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-6 bg-slate-50">
           {activeTab === "detail" ? (
-            <div className="space-y-4 max-w-3xl mx-auto">
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-                <div className="border-b border-slate-100 pb-3 mb-4 flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <div className="space-y-4 max-w-4xl mx-auto">
+              {/* Header Hero Card */}
+              <div className="rounded-2xl bg-gradient-to-br from-slate-900 via-slate-950 to-indigo-950 text-white p-5 sm:p-6 shadow-md border border-slate-800/80">
+                <div className="flex flex-wrap items-center gap-2 mb-2.5">
+                  <span className="font-mono font-bold text-xs px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 shadow-2xs font-semibold">
+                    {detail.code}
+                  </span>
+                  <span className="text-xs font-medium text-cyan-300 bg-cyan-400/10 border border-cyan-400/20 px-2.5 py-1 rounded-lg">
                     {detail.section}
                   </span>
-                  <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                  <span className="text-xs font-semibold text-amber-300 bg-amber-400/10 border border-amber-400/20 px-2.5 py-1 rounded-lg">
                     PDF หน้า {detail.page} จาก 6 หน้า
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-300 bg-emerald-500/10 border border-emerald-400/20 px-2.5 py-1 rounded-lg">
+                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+                    <span>DailiTech • AWS DEV v1.5</span>
+                  </span>
+                </div>
+                <h2 className="text-base sm:text-xl font-bold text-white tracking-tight leading-snug">
+                  {detail.title}
+                </h2>
+              </div>
+
+              {/* Main Content Card with Enhanced Markdown Styling */}
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-7 shadow-xs">
+                <div className="border-b border-slate-100 pb-3 mb-4 flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    สเปกและรายละเอียดเชิงสถาปัตยกรรม (Architectural Specification)
+                  </span>
+                  <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-md border border-amber-200">
+                    PDF หน้า {detail.page}
                   </span>
                 </div>
 
-                <div className="prose prose-slate max-w-none text-sm leading-relaxed prose-table:text-xs prose-th:bg-slate-100 prose-td:border-slate-200 prose-pre:bg-slate-900 prose-pre:text-slate-100 prose-code:text-blue-600">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {detail.content}
-                  </ReactMarkdown>
-                </div>
+                <MarkdownRenderer
+                  content={cleanThaiOcrText(detail.content)}
+                  stripLeadingHeading={true}
+                />
               </div>
 
-              <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-4 text-xs text-amber-900 flex items-start gap-3">
+              <div className="rounded-2xl border border-amber-200/90 bg-amber-50/70 p-4 text-xs text-amber-900 flex items-start gap-3 shadow-2xs">
                 <Sparkles className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
                 <div>
                   <p className="font-bold mb-0.5">ต้องการวิเคราะห์หรือถามประเด็นเพิ่มเติมเกี่ยวกับ AWS หัวข้อนี้?</p>
