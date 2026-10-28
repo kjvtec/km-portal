@@ -29,8 +29,16 @@ interface Message {
   content: string;
 }
 
+const DEFAULT_WELCOME_CONTENT = `👋 **สวัสดีครับ! ผมคือ น้อง Jiffy ผู้ช่วย AI ประจำโครงการ JIFFY RETAIL POS Replacement** พร้อมตอบคำถามและสืบค้นข้อกำหนดจากเอกสาร DSD ฉบับทางการ (1,004 หน้า) ครบทั้ง 9 หมวด พิมพ์คำถามได้เลยครับ`;
+
 export default function ChatPage() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: "welcome-1",
+      role: "assistant",
+      content: DEFAULT_WELCOME_CONTENT,
+    },
+  ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -167,10 +175,30 @@ export default function ChatPage() {
           </div>
         </div>
 
-        <div className="text-right hidden sm:block">
-          <span className="text-xs font-medium text-slate-500">
-            ฐานข้อมูล: <strong className="text-slate-800">JFFPOS Retail (PTTRM)</strong>
-          </span>
+        <div className="flex items-center gap-2">
+          <div className="text-right hidden sm:block mr-2">
+            <span className="text-xs font-medium text-slate-500">
+              ฐานข้อมูล: <strong className="text-slate-800">JFFPOS Retail (PTTRM)</strong>
+            </span>
+          </div>
+
+          <button
+            onClick={() => {
+              setMessages([
+                {
+                  id: "welcome-" + Date.now(),
+                  role: "assistant",
+                  content: DEFAULT_WELCOME_CONTENT,
+                },
+              ]);
+              shuffleSuggestions();
+            }}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer shrink-0"
+            title="เริ่มบทสนทนาใหม่"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">ล้างการสนทนา</span>
+          </button>
         </div>
       </div>
 

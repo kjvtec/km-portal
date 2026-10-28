@@ -30,16 +30,14 @@ for (const code in baBrData) {
   brCounts[code] = baBrData[code]?.length || 0;
 }
 
+const DEFAULT_WELCOME_CONTENT = `👋 **สวัสดีครับ! ผมคือ น้อง Jiffy ผู้ช่วย AI ประจำโครงการ JIFFY RETAIL POS Replacement** พร้อมตอบคำถามและสืบค้นข้อกำหนดจากเอกสาร DSD ฉบับทางการ (1,004 หน้า) ครบทั้ง 9 หมวด พิมพ์คำถามได้เลยครับ`;
+
 export default function HomePage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome-1",
       role: "assistant",
-      content: `👋 **สวัสดีครับ! ผมคือ "น้อง Jiffy" ผู้ช่วย AI ประจำโครงการ JIFFY RETAIL POS Replacement Project (PTTRM)**
-
-ยินดีต้อนรับสู่ระบบ **VTEC Retail Knowledge Base** ครับ ผมพร้อมช่วยสืบค้นและตอบทุกข้อสงสัยเกี่ยวกับกฎเกณฑ์ทางธุรกิจ หน้าจอการทำงาน และข้อกำหนดการออกแบบระบบจากเอกสารทางการ **DSD PTTRM JIFFY RETAIL V1.0 (Signed 28 Sep 2026 ฉบับเต็ม 1,004 หน้า รวม 977 Chunks)** ครอบคลุมครบทั้ง 9 หมวดธุรกิจ (BA-01 ถึง BA-09) พร้อมระบุเลขหน้าอ้างอิงให้ทันทีครับ
-
-💡 *สามารถพิมพ์คำถามที่ต้องการด้านล่าง หรือคลิกหัวข้อแนะนำเพื่อเริ่มต้นคุยกับน้อง Jiffy ได้เลยครับ:*`,
+      content: DEFAULT_WELCOME_CONTENT,
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
@@ -138,7 +136,7 @@ export default function HomePage() {
       {
         id: "welcome-" + Date.now(),
         role: "assistant",
-        content: `👋 **สวัสดีครับ! ผมคือ น้อง Jiffy ผู้ช่วย AI ประจำโครงการ JIFFY RETAIL POS Replacement** พร้อมตอบคำถามและสืบค้นข้อกำหนดจากเอกสาร DSD ฉบับทางการ (1,004 หน้า) ครบทั้ง 9 หมวด พิมพ์คำถามได้เลยครับ`,
+        content: DEFAULT_WELCOME_CONTENT,
       },
     ]);
   }, []);
