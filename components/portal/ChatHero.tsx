@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { NongJiffyAvatar } from "@/components/ui/NongJiffyAvatar";
 import { autoLinkBrAndCitations } from "@/lib/utils";
+import { BrDetailModal } from "./BrDetailModal";
 import { Message } from "./types";
 
 interface SuggestedQuestion {
@@ -40,6 +41,7 @@ export const ChatHero = memo(function ChatHero({
 }: ChatHeroProps) {
   const [input, setInput] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [selectedBrCode, setSelectedBrCode] = useState<string | null>(null);
   const [activeSuggestions, setActiveSuggestions] = useState<SuggestedQuestion[]>([]);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
@@ -232,6 +234,30 @@ export const ChatHero = memo(function ChatHero({
                       ),
                       hr: () => <hr className="my-3.5 border-slate-200" />,
                       a: ({ href, children }) => {
+                        const brMatch =
+                          href?.match(/\/documents\/br\/(BR-\d{2}-\d{2}(?:-\d{2})?)/i) ||
+                          (typeof children === "string" &&
+                            children.match(/^(BR-\d{2}-\d{2}(?:-\d{2})?)/));
+
+                        if (brMatch) {
+                          const code = brMatch[1].toUpperCase();
+                          return (
+                            <a
+                              href={`/documents/br/${code}`}
+                              onClick={(e) => {
+                                if (!e.ctrlKey && !e.metaKey && e.button === 0) {
+                                  e.preventDefault();
+                                  setSelectedBrCode(code);
+                                }
+                              }}
+                              className="inline-flex items-center font-mono font-bold text-[11px] px-2 py-0.5 rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100 hover:text-blue-900 border border-blue-200/90 transition-colors mx-0.5 cursor-pointer shadow-2xs"
+                              title={`คลิกเพื่อเปิดอ่านรายละเอียดข้อกำหนด ${code} ฉบับเต็ม`}
+                            >
+                              {children}
+                            </a>
+                          );
+                        }
+
                         const isPdf = href?.includes(".pdf");
                         let pageTooltip = "คลิกเพื่อเปิดลิงก์";
                         if (isPdf) {
@@ -239,23 +265,6 @@ export const ChatHero = memo(function ChatHero({
                           pageTooltip = pageMatch
                             ? `คลิกเพื่อเปิดเอกสาร DSD ฉบับทางการ หน้า ${pageMatch[1]}`
                             : "คลิกเพื่อเปิดเอกสาร DSD ฉบับทางการ";
-                        }
-
-                        const isBrCode =
-                          typeof children === "string" && /^BR-\d{2}-\d{2}/.test(children);
-
-                        if (isBrCode) {
-                          return (
-                            <a
-                              href={href}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center font-mono font-bold text-[11px] px-2 py-0.5 rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100 hover:text-blue-900 border border-blue-200/90 transition-colors mx-0.5 cursor-pointer shadow-2xs"
-                              title={pageTooltip}
-                            >
-                              {children}
-                            </a>
-                          );
                         }
 
                         return (
@@ -345,6 +354,17 @@ export const ChatHero = memo(function ChatHero({
           </button>
         </form>
       </div>
+
+      {selectedBrCode && (
+        <BrDetailModal
+          brCode={selectedBrCode}
+          onClose={() => setSelectedBrCode(null)}
+          onAskAi={(prompt) => {
+            setSelectedBrCode(null);
+            onSendMessage(prompt);
+          }}
+        />
+      )}
     </div>
   );
 });

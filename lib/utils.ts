@@ -58,10 +58,8 @@ export function autoLinkBrAndCitations(rawText: string): string {
   // Matches: BR code, optional (หน้า X) or หน้า X, and optional trailing spaces before a closing parenthesis
   const brRegex = /(BR-\d{2}-\d{2}(?:-\d{2})?)(?:\s*(?:\(\s*หน้า\s*(\d{1,4})(?:\s*[\/\-]\s*\d{1,4})?\s*\)|หน้า\s*(\d{1,4})(?:\s*[\/\-]\s*\d{1,4})?))?(?:\s*(?=\)))?/g;
 
-  processed = processed.replace(brRegex, (match, brCode, p1, p2) => {
-    const explicitPage = p1 || p2;
-    const page = explicitPage ? parseInt(explicitPage, 10) : getPageForBr(brCode);
-    return `[${brCode}](/docs/DSD-PTTRM-JIFFY-RETAIL-V1.0_Signed.pdf#page=${page})`;
+  processed = processed.replace(brRegex, (match, brCode) => {
+    return `[${brCode}](/documents/br/${brCode})`;
   });
 
   // 3. For any remaining standalone page ranges like "หน้า 33-37" or "หน้า 558" (exclude "หน้า X/1004")

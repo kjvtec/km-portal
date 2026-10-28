@@ -19,6 +19,7 @@ import {
 import { NongJiffyAvatar } from "@/components/ui/NongJiffyAvatar";
 import { autoLinkBrAndCitations } from "@/lib/utils";
 import { allSuggestedQuestions } from "@/components/portal/constants";
+import { BrDetailModal } from "@/components/portal/BrDetailModal";
 
 interface Message {
   id: string;
@@ -32,6 +33,7 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [selectedBrCode, setSelectedBrCode] = useState<string | null>(null);
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
@@ -287,6 +289,30 @@ export default function ChatPage() {
                             ),
                             hr: () => <hr className="my-3.5 border-slate-200" />,
                             a: ({ href, children }) => {
+                              const brMatch =
+                                href?.match(/\/documents\/br\/(BR-\d{2}-\d{2}(?:-\d{2})?)/i) ||
+                                (typeof children === "string" &&
+                                  children.match(/^(BR-\d{2}-\d{2}(?:-\d{2})?)/));
+
+                              if (brMatch) {
+                                const code = brMatch[1].toUpperCase();
+                                return (
+                                  <a
+                                    href={`/documents/br/${code}`}
+                                    onClick={(e) => {
+                                      if (!e.ctrlKey && !e.metaKey && e.button === 0) {
+                                        e.preventDefault();
+                                        setSelectedBrCode(code);
+                                      }
+                                    }}
+                                    className="inline-flex items-center font-mono font-bold text-[11px] px-2 py-0.5 rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100 hover:text-blue-900 border border-blue-200/90 transition-colors mx-0.5 cursor-pointer shadow-2xs"
+                                    title={`คลิกเพื่อเปิดอ่านรายละเอียดข้อกำหนด ${code} ฉบับเต็ม`}
+                                  >
+                                    {children}
+                                  </a>
+                                );
+                              }
+
                               const isPdf = href?.includes(".pdf");
                               let pageTooltip = "คลิกเพื่อเปิดลิงก์";
                               if (isPdf) {
@@ -294,23 +320,6 @@ export default function ChatPage() {
                                 pageTooltip = pageMatch
                                   ? `คลิกเพื่อเปิดเอกสาร DSD ฉบับทางการ หน้า ${pageMatch[1]}`
                                   : "คลิกเพื่อเปิดเอกสาร DSD ฉบับทางการ";
-                              }
-
-                              const isBrCode =
-                                typeof children === "string" && /^BR-\d{2}-\d{2}/.test(children);
-
-                              if (isBrCode) {
-                                return (
-                                  <a
-                                    href={href}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center font-mono font-bold text-[11px] px-2 py-0.5 rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100 hover:text-blue-900 border border-blue-200/90 transition-colors mx-0.5 cursor-pointer shadow-2xs"
-                                    title={pageTooltip}
-                                  >
-                                    {children}
-                                  </a>
-                                );
                               }
 
                               return (
@@ -406,6 +415,17 @@ export default function ChatPage() {
           VTEC Retail Assistant ตอบคำถามโดยอ้างอิงเอกสารข้อกำหนดเชิงเทคนิค DSD BA06 V2.0
         </p>
       </form>
+
+      {selectedBrCode && (
+        <BrDetailModal
+          brCode={selectedBrCode}
+          onClose={() => setSelectedBrCode(null)}
+          onAskAi={(prompt) => {
+            setSelectedBrCode(null);
+            setInput(prompt);
+          }}
+        />
+      )}
     </div>
   );
 }
