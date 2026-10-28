@@ -133,6 +133,7 @@ ${contextText ? `### ข้อมูลบริบทที่ดึงมา�
       system: systemPrompt,
       messages: userAndAssistantMessages,
       temperature: 0.1,
+      maxOutputTokens: 800, // Enforce <= 800 tokens to safely stay below Groq free tier 1,000 OTPM limit
     });
 
     return result.toTextStreamResponse();
