@@ -23,10 +23,10 @@ export const QuickActionsBar = memo(function QuickActionsBar({
         </div>
         <div>
           <h3 className="text-sm font-bold text-slate-900">
-            ฐานข้อมูลเอกสารทางการ DSD ฉบับ Signed 28 Sep 2026 (1,004 หน้า)
+            ฐานข้อมูลความรู้ระบบ DSD Signed (1,004 หน้า) & สถาปัตยกรรม AWS DEV v1.5
           </h3>
           <p className="text-xs text-slate-500">
-            ระบบสกัดแยก 977 Chunks ครอบคลุม 9 หมวดธุรกิจ (BA-01 ถึง BA-09) พร้อมเลขหน้าอ้างอิงตรงตามเล่ม
+            สกัดแยก 989 Chunks ครอบคลุม 9 หมวดธุรกิจ POS (BA-01 ถึง BA-09) และโครงสร้างคลาวด์ AWS (EKS, Aurora, Redis, OpenVPN)
           </p>
         </div>
       </div>

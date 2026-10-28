@@ -138,6 +138,32 @@ export const allSuggestedQuestions = [
     label: "Data Views & Mapping Schemas (BA-09)",
     query: "ภาพรวมโครงสร้างตารางฐานข้อมูลและ Data Views หลักในหมวด BA-09 สรุปเป็นหัวข้อสำคัญมีอะไรบ้าง?",
   },
+
+  // AWS Cloud Architecture & Infrastructure (DEV Environment v1.5)
+  {
+    label: "สถาปัตยกรรม AWS Multi-Account",
+    query: "โครงสร้าง AWS Multi-Account ของระบบ PTTRM VTEC JIFFY POS ใน DEV มี Account ใดบ้างและแบ่งหน้าที่อย่างไร?",
+  },
+  {
+    label: "การไหลของทราฟฟิก & CNAME",
+    query: "เส้นทางการไหลของทราฟฟิก (Traffic Flow) จาก CloudFront ไปยัง EKS Pods และการตั้งค่า DNS CNAME ทำอย่างไร?",
+  },
+  {
+    label: "สเปก EKS Cluster & Node Group",
+    query: "Amazon EKS Cluster (vtechq-eks-dev) ใช้ Kubernetes เวอร์ชันใด มี Node Group สเปกอะไร และมี Add-on อะไรบ้าง?",
+  },
+  {
+    label: "ขั้นตอนเชื่อมต่อ OpenVPN เข้า EKS/DB",
+    query: "ขั้นตอนการเชื่อมต่อ OpenVPN Access Server เข้าสู่เครือข่ายภายในเพื่อสั่งงาน EKS และฐานข้อมูลต้องทำอย่างไร?",
+  },
+  {
+    label: "สเปก Aurora PostgreSQL & Redis",
+    query: "ฐานข้อมูล Amazon Aurora PostgreSQL และ ElastiCache Redis ใน DEV มีขนาด Instance, พอร์ต และนโยบายความปลอดภัยอย่างไร?",
+  },
+  {
+    label: "VPC CIDR & การแบ่ง Subnet 3 AZ",
+    query: "สถาปัตยกรรมโครงข่าย VPC, วง IP หลัก (Primary CIDR), Pod Secondary CIDR และการจัดแบ่ง Subnet ใน 3 Availability Zones เป็นอย่างไร?",
+  },
 ];
 
 export const suggestedQuestions = allSuggestedQuestions.slice(0, 7);

@@ -10,7 +10,7 @@ async function testSearch(term) {
   console.log(`\n--- Searching for: "${term}" ---`);
   const { data, error } = await supabase.rpc("search_document_chunks_text", {
     query_text: term,
-    match_count: 3,
+    match_count: 2,
   });
 
   if (error) {
@@ -21,13 +21,15 @@ async function testSearch(term) {
   console.log(`Found ${data?.length || 0} results:`);
   data?.forEach((item, i) => {
     console.log(`[${i + 1}] Similarity: ${item.similarity} | Chunk ${item.chunk_index}`);
-    console.log(item.content.slice(0, 150) + "...\n");
+    console.log(item.content.slice(0, 180) + "...\n");
   });
 }
 
 async function main() {
-  await testSearch("WAC");
-  await testSearch("Tolerance");
+  await testSearch("OpenVPN");
+  await testSearch("vtechq-eks-dev");
+  await testSearch("Aurora PostgreSQL");
+  await testSearch("ras-dev.pttrm.com");
 }
 
 main().catch(console.error);

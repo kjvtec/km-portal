@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { Sparkles, BookOpen, ArrowRight, Upload } from "lucide-react";
+import { Sparkles, BookOpen, ArrowRight, Upload, Cloud, ExternalLink } from "lucide-react";
 import { ChatHero } from "@/components/portal/ChatHero";
 import { BusinessModulesGrid } from "@/components/portal/BusinessModulesGrid";
 import { QuickActionsBar } from "@/components/portal/QuickActionsBar";
@@ -206,9 +206,15 @@ export default function HomePage() {
         <div className="absolute -bottom-16 -left-16 h-72 w-72 rounded-full bg-indigo-500/10 blur-3xl"></div>
 
         <div className="relative z-10 max-w-3xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-500/10 px-3.5 py-1.5 text-xs font-medium text-cyan-300 mb-6 backdrop-blur-sm">
-            <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
-            <span>DSD PTTRM JIFFY RETAIL V1.0 (Signed 28 Sep 2026 ฉบับทางการ 1,004 หน้า)</span>
+          <div className="flex flex-wrap items-center gap-2 mb-6">
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-500/10 px-3.5 py-1.5 text-xs font-medium text-cyan-300 backdrop-blur-sm">
+              <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
+              <span>DSD PTTRM JIFFY RETAIL V1.0 (Signed 1,004 หน้า)</span>
+            </div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-500/10 px-3.5 py-1.5 text-xs font-medium text-amber-300 backdrop-blur-sm">
+              <Cloud className="h-3.5 w-3.5 text-amber-400" />
+              <span>AWS Cloud Infrastructure DEV v1.5 (DailiTech)</span>
+            </div>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight mb-4">
@@ -221,9 +227,9 @@ export default function HomePage() {
           <p className="text-base sm:text-lg text-slate-300 leading-relaxed mb-6">
             ศูนย์กลางการจัดการองค์ความรู้ สถาปัตยกรรมระบบ และข้อกำหนดการออกแบบฉบับลงนามทางการ{" "}
             <strong className="text-white">JIFFY RETAIL POS Replacement Project (PTTRM)</strong>{" "}
-            ครอบคลุมทั้ง 9 หมวดธุรกิจ (
-            <strong className="text-cyan-300">BA-01 ถึง BA-09</strong> รวม 1,004 หน้า 977 Chunks)
-            พร้อมระบบผู้ช่วย AI ค้นหาและตอบคำถามระบุเลขหน้าอ้างอิงทันที
+            ครอบคลุมครบทั้ง 9 หมวดธุรกิจ (
+            <strong className="text-cyan-300">BA-01 ถึง BA-09</strong> รวม 1,004 หน้า)
+            และสถาปัตยกรรมคลาวด์ <strong className="text-amber-300">AWS DEV Environment v1.5</strong> พร้อมระบบผู้ช่วย AI ค้นหาและตอบคำถามระบุเอกสารอ้างอิงทันที
           </p>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -232,17 +238,27 @@ export default function HomePage() {
               className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition-all hover:from-cyan-400 hover:to-blue-500"
             >
               <BookOpen className="h-4 w-4" />
-              <span>ดูคลังเอกสาร DSD (1,004 หน้า)</span>
+              <span>ดูคลังเอกสารทั้งหมด</span>
               <ArrowRight className="h-4 w-4 ml-1" />
             </Link>
 
             <Link
-              href="/documents/upload"
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800/80 px-5 py-3 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-700 hover:text-white"
+              href="/documents/aws"
+              className="inline-flex items-center gap-2 rounded-xl border border-amber-400/40 bg-amber-500/10 px-5 py-3 text-sm font-semibold text-amber-200 hover:bg-amber-500/20 hover:text-white transition-colors"
             >
-              <Upload className="h-4 w-4" />
-              <span>อัปโหลดเอกสารใหม่</span>
+              <Cloud className="h-4 w-4 text-amber-400" />
+              <span>รายงานสรุป AWS DEV</span>
             </Link>
+
+            <a
+              href="/docs/PTTRM_VTEC_JIFFY_POS_Resource_Summary_DEV_TH.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-3 text-xs font-medium text-slate-300 transition-colors hover:bg-slate-700 hover:text-white"
+            >
+              <span>PDF AWS (6 หน้า)</span>
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
           </div>
         </div>
       </div>

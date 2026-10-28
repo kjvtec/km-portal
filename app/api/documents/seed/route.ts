@@ -124,13 +124,94 @@ export async function POST() {
       }
     }
 
+    // 5. Also seed AWS DEV Resource Summary if exists
+    let awsChunkCount = 0;
+    const awsChunksPath = path.join(process.cwd(), "data", "aws-dev-chunks.json");
+    const awsMdPath = path.join(process.cwd(), "data", "aws-dev-resource-summary.md");
+
+    if (fs.existsSync(awsChunksPath) && fs.existsSync(awsMdPath)) {
+      const awsChunks = JSON.parse(fs.readFileSync(awsChunksPath, "utf-8")) as Array<{
+        title: string;
+        content: string;
+      }>;
+      const awsMd = fs.readFileSync(awsMdPath, "utf-8");
+      const awsTitle = "PTTRM VTEC JIFFY POS — รายงานสรุปทรัพยากรระบบ AWS DEV v1.5 (DailiTech)";
+
+      const { data: existingAwsDoc } = await supabase
+        .from("documents")
+        .select("id")
+        .eq("workspace_id", workspaceId)
+        .ilike("title", "%AWS DEV%")
+        .single();
+
+      let awsDocId = existingAwsDoc?.id;
+      if (awsDocId) {
+        await supabase.from("document_chunks").delete().eq("document_id", awsDocId);
+        await supabase
+          .from("documents")
+          .update({
+            title: awsTitle,
+            content: awsMd,
+            file_type: "pdf",
+            metadata: {
+              source: "PTTRM_VTEC_JIFFY_POS_Resource_Summary_DEV_TH.pdf",
+              pdfUrl: "/docs/PTTRM_VTEC_JIFFY_POS_Resource_Summary_DEV_TH.pdf",
+              author: "DailiTech Co., Ltd. (AWS Advanced Consulting Partner)",
+              version: "1.5",
+              date: "2026-10-26",
+              environment: "DEV",
+              region: "ap-southeast-7 (Bangkok)",
+              totalPages: 6,
+              totalChunks: awsChunks.length,
+            },
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", awsDocId);
+      } else {
+        const { data: newAwsDoc } = await supabase
+          .from("documents")
+          .insert({
+            workspace_id: workspaceId,
+            title: awsTitle,
+            file_type: "pdf",
+            content: awsMd,
+            metadata: {
+              source: "PTTRM_VTEC_JIFFY_POS_Resource_Summary_DEV_TH.pdf",
+              pdfUrl: "/docs/PTTRM_VTEC_JIFFY_POS_Resource_Summary_DEV_TH.pdf",
+              author: "DailiTech Co., Ltd. (AWS Advanced Consulting Partner)",
+              version: "1.5",
+              date: "2026-10-26",
+              environment: "DEV",
+              region: "ap-southeast-7 (Bangkok)",
+              totalPages: 6,
+              totalChunks: awsChunks.length,
+            },
+          })
+          .select("id")
+          .single();
+        awsDocId = newAwsDoc?.id;
+      }
+
+      if (awsDocId) {
+        const awsRecords = awsChunks.map((c, index) => ({
+          document_id: awsDocId,
+          workspace_id: workspaceId,
+          chunk_index: index,
+          content: c.content,
+          token_count: Math.ceil(c.content.length / 4),
+        }));
+        await supabase.from("document_chunks").insert(awsRecords);
+        awsChunkCount = awsChunks.length;
+      }
+    }
+
     return NextResponse.json({
       success: true,
       workspaceId,
       documentId,
       title,
-      chunkCount: rawChunks.length,
-      message: `นำเข้าข้อมูล DSD ฉบับทางการสำเร็จ! รวม ${rawChunks.length} Chunks (1,004 หน้า BA-01 ถึง BA-09)`,
+      chunkCount: rawChunks.length + awsChunkCount,
+      message: `นำเข้าข้อมูล DSD ฉบับทางการ (${rawChunks.length} Chunks) และเอกสาร AWS DEV (${awsChunkCount} Chunks) สำเร็จ!`,
     });
   } catch (error: unknown) {
     console.error("Seeding error:", error);
