@@ -1,5 +1,13 @@
-const pat = "YOUR_SUPABASE_PAT_HERE";
-const ref = "cnzthrnkyumhgsomszwu";
+import path from "path";
+import { fileURLToPath } from "url";
+
+try {
+  process.loadEnvFile?.(path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../.env.local"));
+} catch {}
+
+const pat = process.env.SUPABASE_ACCESS_TOKEN || "YOUR_SUPABASE_PAT_HERE";
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const ref = url.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1] || "YOUR_PROJECT_REF";
 
 const sql = `
 GRANT ALL ON ALL TABLES IN SCHEMA public TO postgres, anon, authenticated, service_role;

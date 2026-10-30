@@ -1,9 +1,15 @@
+import path from "path";
+import { fileURLToPath } from "url";
 import { createOpenAI } from "@ai-sdk/openai";
 import { streamText } from "ai";
 
+try {
+  process.loadEnvFile?.(path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../.env.local"));
+} catch {}
+
 const groq = createOpenAI({
   baseURL: "https://api.groq.com/openai/v1",
-  apiKey: "YOUR_GROQ_KEY_HERE",
+  apiKey: process.env.GROQ_API_KEY || "YOUR_GROQ_KEY_HERE",
 });
 
 async function testAiSdkStream() {

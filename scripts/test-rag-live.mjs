@@ -1,16 +1,10 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { streamText } from "ai";
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = "https://cnzthrnkyumhgsomszwu.supabase.co";
-const serviceKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNuenRocm5reXVtaGdzb21zend1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MjExODAyNCwiZXhwIjoyMTA3Njk0MDI0fQ.nXRVNOCjmlQGQe_xYGPX2TB0ezyrT4nIwIT64iYlPDQ";
-
-const supabase = createClient(supabaseUrl, serviceKey);
+import { supabase } from "./supabase-client.mjs";
 
 const groq = createOpenAI({
   baseURL: "https://api.groq.com/openai/v1",
-  apiKey: "YOUR_GROQ_KEY_HERE",
+  apiKey: process.env.GROQ_API_KEY || "YOUR_GROQ_KEY_HERE",
 });
 
 async function testRAG(query, searchTerm) {

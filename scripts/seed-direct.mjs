@@ -1,12 +1,6 @@
-import { createClient } from "@supabase/supabase-js";
 import fs from "fs";
 import path from "path";
-
-const supabaseUrl = "https://cnzthrnkyumhgsomszwu.supabase.co";
-const serviceKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNuenRocm5reXVtaGdzb21zend1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MjExODAyNCwiZXhwIjoyMTA3Njk0MDI0fQ.nXRVNOCjmlQGQe_xYGPX2TB0ezyrT4nIwIT64iYlPDQ";
-
-const supabase = createClient(supabaseUrl, serviceKey);
+import { supabase } from "./supabase-client.mjs";
 
 async function main() {
   const filePath = path.join(process.cwd(), "data", "seed-knowledge-base.md");
